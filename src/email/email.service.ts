@@ -1,9 +1,7 @@
-// src/email/email.service.ts
-
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransporter } from 'src/utils/email.util';
-import * as crypto from 'crypto';
+import { generateRandomNumber } from 'src/utils/generate-random-code.util';
 
 @Injectable()
 export class EmailService {
@@ -15,8 +13,8 @@ export class EmailService {
     this.transporter = createTransporter(emailUser, emailPass);
   }
 
-  async sendEmailVerificationCode(email: string): Promise<string> {
-    const verificationCode = crypto.randomBytes(3).toString('hex');
+  async sendEmailVerificationCode(email: string): Promise<boolean> {
+    const verificationCode = generateRandomNumber();
     const mailOptions = {
       from: this.configService.get('EMAIL_USER'),
       to: email,
@@ -25,6 +23,6 @@ export class EmailService {
     };
 
     await this.transporter.sendMail(mailOptions);
-    return verificationCode;
+    return true;
   }
 }
