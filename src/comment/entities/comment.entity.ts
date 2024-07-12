@@ -3,14 +3,15 @@ import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn, Entity,
+  DeleteDateColumn,
+  Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('comments')
+@Entity({ name: 'comments' })
 export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
