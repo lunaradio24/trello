@@ -13,7 +13,7 @@ import { User } from 'src/user/entities/user.entity';
 
 @Entity({ name: 'card_assignees' })
 export class CardAssignee {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
   @Column({ name: 'card_id', type: 'int', nullable: false })
@@ -31,7 +31,7 @@ export class CardAssignee {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  @ManyToOne(() => Card, (card) => card.cardAssignee)
+  @ManyToOne(() => Card, (card) => card.cardAssignees)
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
   card: Card;
 

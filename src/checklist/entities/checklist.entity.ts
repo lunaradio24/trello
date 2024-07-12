@@ -1,6 +1,4 @@
-// import { Card } from 'src/card/entities/card.entity';
 import { Card } from 'src/card/entities/card.entity';
-import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -12,19 +10,22 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'comments' })
-export class Comment {
+@Entity({ name: 'checklists' })
+export class Checklist {
   @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', nullable: false })
   cardId: number;
 
-  @Column()
-  commenterId: number;
-
-  @Column()
+  @Column({ type: 'varchar' })
   content: string;
+
+  @Column({ type: 'datetime' })
+  dueDate: Date;
+
+  @Column({ type: 'boolean' })
+  isChecked: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -35,11 +36,7 @@ export class Comment {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  @ManyToOne(() => Card, (card) => card.comments)
+  @ManyToOne(() => Card, (card) => card.checklists)
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
   card: Card;
-
-  @ManyToOne(() => User, (user) => user.comments)
-  @JoinColumn({ name: 'commenter_id', referencedColumnName: 'id' })
-  commenter: User;
 }

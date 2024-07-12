@@ -10,10 +10,13 @@ import {
 } from 'typeorm';
 import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
 import { Comment } from '../../comment/entities/comment.entity';
+import { Board } from 'src/board/entities/board.entity';
+import { BoardMember } from 'src/board/entities/board-member.entity';
+import { CardAssignee } from 'src/card/entities/card_assignee.entity';
 
 @Entity({ name: 'users' })
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
   @Column({ type: 'varchar', unique: true, nullable: false })
@@ -46,5 +49,12 @@ export class User {
   @OneToMany(() => Comment, (comment) => comment.commenter)
   comments: Comment[];
 
-  //
+  @OneToMany(() => Board, (board) => board.admin)
+  boards: Board[];
+
+  @OneToMany(() => BoardMember, (member) => member.user)
+  members: BoardMember[];
+
+  @OneToMany(() => CardAssignee, (assignee) => assignee.user)
+  assignee: CardAssignee[];
 }
