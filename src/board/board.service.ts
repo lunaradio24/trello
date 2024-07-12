@@ -43,7 +43,8 @@ export class BoardService {
     return updatedBoard;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} board`;
+  async delete(id: number) {
+    const deletingBoard = await this.boardRepository.delete(id)
+    return;
   }
 }

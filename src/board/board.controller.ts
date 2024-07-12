@@ -56,7 +56,13 @@ export class BoardController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.boardService.remove(+id);
+  async remove(@Param('id') id: string) {
+    // 삭제 권한에 대해 생각 필요
+    // board 삭제 시 lists와 cards 함께 삭제 필요
+    const delededBoard = await this.boardService.delete(+id);
+    return {
+      status: HttpStatus.OK,
+      message: '보드 삭제에 성공했습니다.',
+    };
   }
 }
