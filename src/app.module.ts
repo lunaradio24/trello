@@ -3,9 +3,12 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { Module } from '@nestjs/common';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { CommentModule } from "./comment/comment.module";
+import { CommentModule } from './comment/comment.module';
+import { EmailModule } from './email/email.module';
+import { RedisModule } from './redis/redis.module';
 
 const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
@@ -23,6 +26,19 @@ const typeOrmModuleOptions = {
   inject: [ConfigService],
 };
 
+const mailerModuleOptions = {
+  useFactory: async (configService: ConfigService) => ({
+    transport: {
+      host: configService.get('EMAIL_HOST'),
+      auth: {
+        user: configService.get('EMAIL_USERNAME'),
+        pass: configService.get('EMAIL_PASSWORD'),
+      },
+    },
+  }),
+  inject: [ConfigService],
+};
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -36,12 +52,13 @@ const typeOrmModuleOptions = {
         DB_SYNC: Joi.boolean().required(),
       }),
     }),
+    MailerModule.forRootAsync(mailerModuleOptions),
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     AuthModule,
     UserModule,
     CommentModule,
-
-
+    EmailModule,
+    RedisModule,
   ],
   controllers: [],
   providers: [],
