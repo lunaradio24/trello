@@ -1,15 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 
-@Controller('board')
+@Controller('boards')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
-  @Post()
-  create(@Body() createBoardDto: CreateBoardDto) {
-    return this.boardService.create(createBoardDto);
+  /** 보드 생성 */
+  @Post('/')
+  async create(@Body() createBoardDto: CreateBoardDto) {
+    const board = await this.boardService.create(createBoardDto);
+    return {
+      status: HttpStatus.CREATED,
+      message: '보드 생성에 성공했습니다.',
+      board,
+    };
   }
 
   @Get()
