@@ -11,7 +11,7 @@ import {
 
 @Entity({ name: 'attachments' })
 export class Attachment {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
   @Column({ type: 'int', nullable: false })

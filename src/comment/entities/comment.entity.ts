@@ -14,10 +14,10 @@ import {
 
 @Entity({ name: 'comments' })
 export class Comment {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
-  @Column()
+  @Column({ type: 'int' })
   cardId: number;
 
   @Column()

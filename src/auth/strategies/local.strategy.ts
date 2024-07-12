@@ -12,8 +12,8 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     });
   }
 
-  async validate(email: string, password: string, name: string): Promise<any> {
-    const signInDto = { email, password, name };
+  async validate(email: string, password: string, nickname: string): Promise<any> {
+    const signInDto = { email, password, nickname };
     const user = await this.authService.validateUser(signInDto);
     if (!user) {
       throw new UnauthorizedException('로그인에 실패했습니다.');
