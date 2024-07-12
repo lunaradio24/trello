@@ -26,7 +26,7 @@ export class AuthService {
   ) {}
 
   async signUp(signUpDto: SignUpDto) {
-    const { email, password } = signUpDto;
+    const { email, password,name} = signUpDto;
 
     // 이메일 중복 여부 확인
     const existingUser = await this.userService.findByEmail(email);
@@ -42,6 +42,7 @@ export class AuthService {
     const newUser = await this.userRepository.save({
       email,
       password: hashedPassword,
+      name,
     });
 
     // 비밀번호 제외 후 반환
