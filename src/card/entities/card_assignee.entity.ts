@@ -31,7 +31,7 @@ export class CardAssignee {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  @ManyToOne(() => Card, (card) => card.cardAssignee)
+  @ManyToOne(() => Card, (card) => card.cardAssignees)
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
   card: Card;
 
