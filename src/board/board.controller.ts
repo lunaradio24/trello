@@ -10,6 +10,8 @@ export class BoardController {
   /** 보드 생성 */
   @Post('/')
   async create(@Body() createBoardDto: CreateBoardDto, @Req() req: any) {
+    // userId로 adminId 지정 필요
+    // const userId = num(req.user.id)
     const board = await this.boardService.create(createBoardDto);
     return {
       status: HttpStatus.CREATED,
@@ -19,8 +21,15 @@ export class BoardController {
   }
 
   @Get('/')
-  findAll() {
-    return this.boardService.findAll();
+  async findAll(@Req() req: any) {
+    // userId에 맞는 boards 찾기 필요
+    // const userId = req.user.id;
+    const boards = await this.boardService.findAll();
+    return {
+      status: HttpStatus.OK,
+      message: '보드 목록 조회에 성공했습니다.',
+      boards,
+    };
   }
 
   @Get(':id')
