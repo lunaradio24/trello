@@ -52,28 +52,28 @@ export class AuthController {
     };
   }
 
-  // @Post('send-email')
-  // async sendEmail(@Body() body: { email: string }) {
-  //   await this.authService.sendVerificationEmail(body.email);
-  //   return {
-  //     message: '이메일 전송에 성공했습니다.',
-  //   };
-  // }
+  @Post('send-email')
+  async sendEmail(@Body() body: { email: string }) {
+    await this.authService.sendVerificationEmail(body.email);
+    return {
+      message: '이메일 전송에 성공했습니다.',
+    };
+  }
 
-  // @Post('verify-email')
-  // async verifyEmail(@Query('email') code: string) {
-  //   const email = await this.redisStrategy.get(code);
+  @Post('verify-email')
+  async verifyEmail(@Query('email') code: string) {
+    const email = await this.redisStrategy.get(code);
 
-  //   if (!email) {
-  //     return {
-  //       message: '잘못되었거나 만료된 인증 코드입니다.',
-  //     };
-  //   }
-  //   await this.redisStrategy.del(code);
+    if (!email) {
+      return {
+        message: '잘못되었거나 만료된 인증 코드입니다.',
+      };
+    }
+    await this.redisStrategy.del(code);
 
-  //   return {
-  //     message: '이메일 인증이 완료되었습니다.',
-  //     email,
-  //   };
-  // }
+    return {
+      message: '이메일 인증이 완료되었습니다.',
+      email,
+    };
+  }
 }

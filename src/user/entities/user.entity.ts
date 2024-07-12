@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
-  DeleteDateColumn
+  DeleteDateColumn,
 } from 'typeorm';
 import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
 
@@ -20,14 +20,14 @@ export class User {
   @Column({ type: 'varchar', select: false, nullable: false })
   password: string;
 
-  @Column({ type: 'varchar', nullable: false})
-  name: string;
+  @Column({ type: 'varchar', nullable: false })
+  nickname: string;
 
-  @Column ({type:'varchar', nullable:true})
-  bio: string
+  @Column({ type: 'varchar', nullable: true })
+  bio: string;
 
-  @Column ({type:'varchar', nullable:true})
-  image: string
+  @Column({ type: 'varchar', nullable: true })
+  image: string;
 
   @CreateDateColumn()
   createdAt: Date;
