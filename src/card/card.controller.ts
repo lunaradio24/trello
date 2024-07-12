@@ -8,27 +8,27 @@ export class CardController {
   constructor(private readonly cardService: CardService) {}
 
   @Post()
-  create(@Body() createCardDto: CreateCardDto) {
-    return this.cardService.create(createCardDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.cardService.findAll();
+  async createCard(@Body() createCardDto: CreateCardDto) {
+    return this.cardService.createCard(createCardDto);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cardService.findOne(+id);
+  async findCardById(@Param('id') id: number) {
+    return this.cardService.findCardById(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
-    return this.cardService.update(+id, updateCardDto);
+  async updateCardById(@Param('id') id: number, @Body() updateCardDto: UpdateCardDto) {
+    return this.cardService.updateCardById(+id, updateCardDto);
   }
 
+  // @Patch(':id')
+  // async moveCardById(@Param('id') id: number) {
+  //   return this.cardService.moveCardById(+id);
+  // }
+
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cardService.remove(+id);
+  async removeCardById(@Param('id') id: number) {
+    return this.cardService.removeCardById(+id);
   }
 }
