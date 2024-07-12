@@ -1,12 +1,17 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { redisStrategy } from './strategies/redis.strategy';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  emailService: any;
+  constructor(
+    private readonly authService: AuthService,
+    private readonly redisStrategy: redisStrategy,
+  ) {}
 
   @Post('sign-up')
   async signUp(@Body() signUpDto: SignUpDto) {
@@ -46,4 +51,29 @@ export class AuthController {
       data: tokens,
     };
   }
+
+  // @Post('send-email')
+  // async sendEmail(@Body() body: { email: string }) {
+  //   await this.authService.sendVerificationEmail(body.email);
+  //   return {
+  //     message: '이메일 전송에 성공했습니다.',
+  //   };
+  // }
+
+  // @Post('verify-email')
+  // async verifyEmail(@Query('email') code: string) {
+  //   const email = await this.redisStrategy.get(code);
+
+  //   if (!email) {
+  //     return {
+  //       message: '잘못되었거나 만료된 인증 코드입니다.',
+  //     };
+  //   }
+  //   await this.redisStrategy.del(code);
+
+  //   return {
+  //     message: '이메일 인증이 완료되었습니다.',
+  //     email,
+  //   };
+  // }
 }

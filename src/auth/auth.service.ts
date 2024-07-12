@@ -11,10 +11,16 @@ import { sign } from 'jsonwebtoken';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { JwtPayload } from './constants/jwt-payload.interface';
 import { ConfigService } from '@nestjs/config';
+import { redisStrategy } from './strategies/redis.strategy';
+import * as bcrypt from 'bcrypt';
+import * as nodemailer from 'nodemailer';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
+  private transporter;
   constructor(
+    private readonly redisService: redisStrategy,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(RefreshToken)
@@ -23,9 +29,46 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private dataSource: DataSource,
-  ) {}
+  ) {
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail',
+      port: 587,
+      host: 'smtp.gmail.com',
+      secure: true,
+      requireTLS: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+  }
 
-  async signUp(signUpDto: SignUpDto) {
+  async sendMail(to: string, subject: string, text: string) {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      text,
+    };
+
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('Email sent: ' + info.response);
+    } catch (error) {
+      console.error('Error sending email: ' + error);
+    }
+  }
+
+  async sendVerificationEmail(email: string) {
+    const verificationCode = crypto.randomBytes(16).toString('hex');
+    await this.redisService.set(verificationCode, email, 'EX', 3600); // 1시간 동안 유효
+
+    const subject = '이메일 인증';
+    const text = `인증 번호: ${verificationCode}`;
+    await this.sendMail(email, subject, text);
+  }
+
+  async signUp(signUpDto: SignUpDto, verificationCode?: string) {
     const { email, password } = signUpDto;
 
     // 이메일 중복 여부 확인
@@ -33,6 +76,20 @@ export class AuthService {
     if (existingUser) {
       throw new ConflictException('이미 해당 이메일로 가입된 사용자가 있습니다!');
     }
+
+    // 인증 번호가 없는 경우 인증 이메일 전송
+    if (!verificationCode) {
+      await this.sendVerificationEmail(email);
+      return { message: '인증 번호를 전송했습니다. 이메일 인증을 해주세요.' };
+    }
+
+    // 인증 번호가 있는 경우 검증
+    const storedEmail = await this.redisService.get(verificationCode);
+    if (storedEmail !== email) {
+      throw new BadRequestException('잘못되었거나 만료된 인증 코드입니다.');
+    }
+
+    await this.redisService.del(verificationCode);
 
     // 비밀번호 해싱
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
@@ -45,7 +102,6 @@ export class AuthService {
     });
 
     // 비밀번호 제외 후 반환
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...newUserWithoutPassword } = newUser;
     return newUserWithoutPassword;
   }
