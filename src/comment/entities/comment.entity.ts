@@ -1,15 +1,16 @@
-import { Card } from 'src/card/entities/card.entity';
+// import { Card } from 'src/card/entities/card.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
+  DeleteDateColumn, Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+@Entity('comments')
 export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
@@ -32,9 +33,9 @@ export class Comment {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  @ManyToOne(() => Card, (card) => card.comments)
-  @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
-  card: Card;
+  // @ManyToOne(() => Card, (card) => card.comments)
+  // @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
+  // card: Card;
 
   @ManyToOne(() => User, (user) => user.comments)
   @JoinColumn({ name: 'commenter_id', referencedColumnName: 'id' })
