@@ -3,11 +3,15 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { BoardMember } from './board-member.entity';
+import { List } from 'src/list/entities/list.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity('boards')
 export class Board {
@@ -32,9 +36,13 @@ export class Board {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  //   @OneToMany(() => List, (list) => list.board)
-  //   list: List[];
+  @ManyToOne(() => User, (user) => user.boards)
+  @JoinColumn({ name: 'admin_id', referencedColumnName: 'id' })
+  admin: User;
 
-  //   @OneToMany(() => BoardMember, (boardMember) => boardMember.board)
-  //   boardMember: BoardMember[];
+  @OneToMany(() => List, (list) => list.board)
+  lists: List[];
+
+  @OneToMany(() => BoardMember, (boardMember) => boardMember.board)
+  members: BoardMember[];
 }

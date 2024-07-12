@@ -17,5 +17,5 @@ export class SignUpDto {
 
   @IsString()
   @IsNotEmpty({ message: '이름을 입력해주세요.' })
-  readonly name: string;
+  readonly nickname: string;
 }

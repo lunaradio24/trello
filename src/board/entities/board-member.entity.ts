@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { BoardMemberType } from '../types/board-member.type';
 import { Board } from './board.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity('boards/members')
 export class BoardMember {
@@ -34,7 +35,11 @@ export class BoardMember {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  //   @ManyToOne(() => Board, (board) => board.boardMember)
-  //   @JoinColumn({ name: 'board_id' })
-  //   board: Board;
+  @ManyToOne(() => User, (user) => user.members)
+  @JoinColumn({ name: 'member_id', referencedColumnName: 'id' })
+  user: User;
+
+  @ManyToOne(() => Board, (board) => board.members)
+  @JoinColumn({ name: 'board_id', referencedColumnName: 'id' })
+  board: Board;
 }

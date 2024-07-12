@@ -5,13 +5,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  //   JoinColumn,
-  // ManyToOne,
-  // OneToMany,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
 } from 'typeorm';
 
-// import { Board } from '../boards/board.entity';
-// import { Card } from '../cards/card.entity';
+import { Board } from 'src/board/entities/board.entity';
+import { Card } from 'src/card/entities/card.entity';
 
 @Entity('lists')
 export class List {
@@ -36,12 +36,12 @@ export class List {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date | null;
 
-  //   // 관계 정의
-  //   @ManyToOne(() => Board, (board) => board.lists)
-  //   //   DB에 들어갈 컬럼명으로
-  //   @JoinColumn({ name: 'board_id', referencedColumnName: 'id' })
-  //   board: Board;
+  // 관계 정의
+  @ManyToOne(() => Board, (board) => board.lists)
+  //   DB에 들어갈 컬럼명으로
+  @JoinColumn({ name: 'board_id', referencedColumnName: 'id' })
+  board: Board;
 
-  //   @OneToMany(() => Card, card => card.list)
-  //   cards: Card[];
+  @OneToMany(() => Card, (card) => card.list)
+  cards: Card[];
 }

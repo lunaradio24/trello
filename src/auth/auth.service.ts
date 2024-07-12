@@ -69,28 +69,13 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto) {
-    const { email, password, name} = signUpDto;
-
+    const { email, password, nickname } = signUpDto;
 
     // 이메일 중복 여부 확인
     const existingUser = await this.userService.findByEmail(email);
     if (existingUser) {
       throw new ConflictException('이미 해당 이메일로 가입된 사용자가 있습니다!');
     }
-
-    // 인증 번호가 없는 경우 인증 이메일 전송
-    if (!verificationCode) {
-      await this.sendVerificationEmail(email);
-      return { message: '인증 번호를 전송했습니다. 이메일 인증을 해주세요.' };
-    }
-
-    // 인증 번호가 있는 경우 검증
-    const storedEmail = await this.redisService.get(verificationCode);
-    if (storedEmail !== email) {
-      throw new BadRequestException('잘못되었거나 만료된 인증 코드입니다.');
-    }
-
-    await this.redisService.del(verificationCode);
 
     // 비밀번호 해싱
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
@@ -100,7 +85,7 @@ export class AuthService {
     const newUser = await this.userRepository.save({
       email,
       password: hashedPassword,
-      name,
+      nickname,
     });
 
     // 비밀번호 제외 후 반환
