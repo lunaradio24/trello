@@ -33,13 +33,26 @@ export class BoardController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.boardService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    // lists와 cards 모두 출력되도록 변경 필요
+    const board = await this.boardService.findOne(+id);
+    return {
+      status: HttpStatus.OK,
+      message: '보드 상세 조회에 성공했습니다.',
+      board,
+    };
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBoardDto: UpdateBoardDto) {
-    return this.boardService.update(+id, updateBoardDto);
+  async update(@Param('id') id: string, @Body() updateBoardDto: UpdateBoardDto) {
+    // 수정 권한에 대해 생각 필요
+    const { title, backgroundColor } = updateBoardDto;
+    const updatedBoard = await this.boardService.update(+id, updateBoardDto);
+    return {
+      status: HttpStatus.OK,
+      message: '보드 수정에 성공했습니다.',
+      updatedBoard,
+    };
   }
 
   @Delete(':id')

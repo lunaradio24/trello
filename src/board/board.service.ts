@@ -24,12 +24,23 @@ export class BoardService {
     return boards;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} board`;
+  async findOne(id: number) {
+    const board = await this.boardRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    return board;
   }
 
-  update(id: number, updateBoardDto: UpdateBoardDto) {
-    return `This action updates a #${id} board`;
+  async update(id: number, updateBoardDto: UpdateBoardDto) {
+    const updatingBoard = await this.boardRepository.update(id, updateBoardDto);
+    const updatedBoard = await this.boardRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    return updatedBoard;
   }
 
   remove(id: number) {
