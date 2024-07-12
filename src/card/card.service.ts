@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,10 +13,10 @@ export class CardService {
   ) {}
 
   async createCard(createCardDto: CreateCardDto): Promise<Card> {
-    const { title } = createCardDto;
+    // const { title } = createCardDto;
 
     const card = this.cardRepository.create({
-      title,
+      // title,
     } as DeepPartial<Card>);
 
     const savedCard = await this.cardRepository.save(card);

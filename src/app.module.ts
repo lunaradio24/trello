@@ -9,6 +9,8 @@ import { UserModule } from './user/user.module';
 import { CommentModule } from './comment/comment.module';
 import { EmailModule } from './email/email.module';
 import { RedisModule } from './redis/redis.module';
+import { CardModule } from './card/card.module';
+import { BoardModule } from './board/board.module';
 
 const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
@@ -29,7 +31,7 @@ const typeOrmModuleOptions = {
 const mailerModuleOptions = {
   useFactory: async (configService: ConfigService) => ({
     transport: {
-      host: configService.get('EMAIL_HOST'),
+      // host: configService.get('EMAIL_HOST'),
       auth: {
         user: configService.get('EMAIL_USERNAME'),
         pass: configService.get('EMAIL_PASSWORD'),
@@ -59,6 +61,8 @@ const mailerModuleOptions = {
     CommentModule,
     EmailModule,
     RedisModule,
+    CardModule,
+    BoardModule,
   ],
   controllers: [],
   providers: [],
