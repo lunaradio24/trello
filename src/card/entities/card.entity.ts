@@ -17,7 +17,7 @@ import { Checklist } from 'src/checklist/entities/checklist.entity';
 
 @Entity({ name: 'cards' })
 export class Card {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
   @Column({ name: 'list_id', type: 'int', nullable: false })

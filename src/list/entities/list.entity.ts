@@ -15,10 +15,10 @@ import { Card } from 'src/card/entities/card.entity';
 
 @Entity('lists')
 export class List {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
-  @Column()
+  @Column({ name: 'board_id', type: 'int' })
   boardId: number;
 
   @Column({ type: 'varchar' })

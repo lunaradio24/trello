@@ -15,10 +15,10 @@ import { User } from 'src/user/entities/user.entity';
 
 @Entity('boards')
 export class Board {
-  @PrimaryGeneratedColumn({ unsigned: true })
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
-  @Column({ name: 'admin_id' })
+  @Column({ name: 'admin_id', type: 'int' })
   adminId: number;
 
   @Column({ type: 'varchar' })

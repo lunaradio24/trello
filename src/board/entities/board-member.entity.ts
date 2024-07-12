@@ -14,13 +14,13 @@ import { User } from 'src/user/entities/user.entity';
 
 @Entity('boards/members')
 export class BoardMember {
-  @PrimaryGeneratedColumn({ unsigned: true })
+  @PrimaryGeneratedColumn({ unsigned: true, type: 'int' })
   id: number;
 
-  @Column({ name: 'board_id' })
+  @Column({ name: 'board_id', type: 'int' })
   boardId: number;
 
-  @Column({ name: 'member_id' })
+  @Column({ name: 'member_id', type: 'int' })
   memberId: number;
 
   @Column({ name: 'member_type', type: 'enum', enum: BoardMemberType })
