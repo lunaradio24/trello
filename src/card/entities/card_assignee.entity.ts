@@ -35,7 +35,7 @@ export class CardAssignee {
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
   card: Card;
 
-  @ManyToOne(() => User, (user) => user.cardAssignee)
+  // @ManyToOne(() => User, (user) => user.cardAssignee)
   @JoinColumn({ name: 'assignee_id', referencedColumnName: 'id' })
   user: User;
 }

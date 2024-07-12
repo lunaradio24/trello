@@ -1,4 +1,4 @@
-import { Card } from 'src/card/entities/card.entity';
+// import { Card } from 'src/card/entities/card.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -34,9 +34,9 @@ export class Comment {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  @ManyToOne(() => Card, (card) => card.comments)
-  @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
-  card: Card;
+  // @ManyToOne(() => Card, (card) => card.comments)
+  // @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
+  // card: Card;
 
   @ManyToOne(() => User, (user) => user.comments)
   @JoinColumn({ name: 'commenter_id', referencedColumnName: 'id' })
