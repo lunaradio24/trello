@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  DeleteDateColumn, OneToMany
+} from 'typeorm';
 import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
 
 @Entity({ name: 'users' })
@@ -12,8 +20,14 @@ export class User {
   @Column({ type: 'varchar', select: false, nullable: false })
   password: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: false})
   name: string;
+
+  @Column ({type:'varchar', nullable:true})
+  bio: string
+
+  @Column ({type:'varchar', nullable:true})
+  image: string
 
   @CreateDateColumn()
   createdAt: Date;
@@ -21,6 +35,15 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @DeleteDateColumn()
+  deletedAt: Date;
+
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshToken: RefreshToken;
+
+  @OneToMany(() => Comment, (comment) => comment.commenter)
+  comments: Comment[];
+
+  //
+
 }

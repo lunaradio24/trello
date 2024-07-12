@@ -14,4 +14,8 @@ export class SignUpDto {
   @IsNotEmpty({ message: '비밀번호 확인을 입력해주세요.' })
   @Validate(IsPasswordMatchingConstraint)
   readonly passwordConfirm: string;
+
+  @IsString()
+  @IsNotEmpty({ message: '이름을 입력해주세요.' })
+  readonly name: string;
 }
