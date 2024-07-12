@@ -6,8 +6,10 @@ import {
   UpdateDateColumn,
   OneToOne,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
+import { Comment } from '../../comment/entities/comment.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -40,4 +42,9 @@ export class User {
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshToken: RefreshToken;
+
+  @OneToMany(() => Comment, (comment) => comment.commenter)
+  comments: Comment[];
+
+  //
 }

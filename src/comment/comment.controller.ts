@@ -1,34 +1,50 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { CommentService } from './comment.service';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import { CommentDto } from './dto/comment.dto';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
-@Controller('comment')
+@Controller('comments')
+@UseGuards(AccessTokenGuard)
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentService.create(createCommentDto);
+  create(@Request() req: any, @Body() commentDto: CommentDto) {
+    const { id: userId } = req.user;
+    return this.commentService.create(userId, commentDto);
   }
 
   @Get()
-  findAll() {
-    return this.commentService.findAll();
+  getListByCardId(@Query('cardId', ParseIntPipe) cardId: number) {
+    return this.commentService.getListByCardId(cardId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commentService.findOne(+id);
+  @Get('my')
+  getListByCommenterId(@Request() req: any) {
+    return this.commentService.getListByCommenterId(req.user.id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentService.update(+id, updateCommentDto);
+  @Patch(':commentId')
+  update(@Request() req: any, @Param('commentId', ParseIntPipe) commentId: number, @Body() commentDto: CommentDto) {
+    const { id: userId } = req.user;
+    return this.commentService.update(userId, commentId, commentDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentService.remove(+id);
+  @Delete(':commentId')
+  remove(@Request() req: any, @Param('commentId', ParseIntPipe) commentId: number, @Body() cardId: number) {
+    const { id: userId } = req.user;
+    return this.commentService.remove(userId, commentId, cardId);
   }
 }
