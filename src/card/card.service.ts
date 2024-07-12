@@ -3,7 +3,9 @@ import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from './entities/card.entity';
-import { DeepPartial, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { List } from 'src/list/entities/list.entity';
 
 @Injectable()
 export class CardService {
@@ -12,22 +14,28 @@ export class CardService {
     private cardRepository: Repository<Card>,
   ) {}
 
-  async createCard(createCardDto: CreateCardDto): Promise<Card> {
-    const { title } = createCardDto;
+  async createCard(createCardDto: CreateCardDto, user: User): Promise<Card> {
+    const { title, list_id } = createCardDto;
+    const list = await this.cardRepository.findOne({ where: { id: list_id } });
+
+    if (!list) {
+      throw new Error('해당 리스트가 없습니다.');
+    }
 
     const card = this.cardRepository.create({
-      title,
-    } as DeepPartial<Card>);
+      user_id: user.id,
+      list_id: list.id,
+      title: title,
+    });
 
-    const savedCard = await this.cardRepository.save(card);
-
-    return this.cardRepository.create({
-      card_id: card.id,
-      title: card.title,
-    } as DeepPartial<Card>);
+    return this.cardRepository.save(card);
   }
 
-  findCardById(id: number) {
+  async findCardById(id: number): Promise<Card> {
+    const card = await this.cardRepository.findOne({
+      where: { id },
+      relations: [''],
+    });
     return `This action returns a #${id} card`;
   }
 
