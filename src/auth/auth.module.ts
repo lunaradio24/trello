@@ -14,6 +14,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { createClient } from 'redis';
 import { redisStrategy } from './strategies/redis.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { redisStrategy } from './strategies/redis.strategy';
     RefreshTokenStrategy,
     LocalStrategy,
     redisStrategy,
+    JwtStrategy,
     {
       provide: 'REDIS',
       useFactory: (configService: ConfigService) => {
