@@ -44,4 +44,6 @@ export class User {
   @OneToMany(() => Comment, (comment) => comment.commenter)
   comments: Comment[];
 
+  //
+
 }
