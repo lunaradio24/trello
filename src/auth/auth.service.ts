@@ -11,61 +11,42 @@ import { sign } from 'jsonwebtoken';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { JwtPayload } from './constants/jwt-payload.interface';
 import { ConfigService } from '@nestjs/config';
-import { redisStrategy } from './strategies/redis.strategy';
-import * as bcrypt from 'bcrypt';
-import * as nodemailer from 'nodemailer';
-import * as crypto from 'crypto';
+import { RedisService } from '../redis/redis.service';
+import { EmailService } from '../email/email.service';
+import { generateRandomNumber } from '../utils/generate-random-code.util';
 
 @Injectable()
 export class AuthService {
-  private transporter;
   constructor(
-    private readonly redisService: redisStrategy,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(RefreshToken)
     private readonly tokenRepository: Repository<RefreshToken>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-    private readonly jwtService: JwtService,
-    private dataSource: DataSource,
-  ) {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      port: 587,
-      host: 'smtp.gmail.com',
-      secure: true,
-      requireTLS: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    private readonly emailService: EmailService,
+    private readonly redisService: RedisService,
+  ) {}
+
+  async sendMail(email: string) {
+    const code = generateRandomNumber();
+    console.log('보낼 데이터: ', email, code);
+    //이메일과 인증토큰 저장
+    await this.redisService.setcode(email, code);
+    // 이메일 전송
+    await this.emailService.sendEmailVerificationCode(email);
   }
 
-  async sendMail(to: string, subject: string, text: string) {
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      text,
-    };
-
-    try {
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('Email sent: ' + info.response);
-    } catch (error) {
-      console.error('Error sending email: ' + error);
+  async verifyEmail(email: string, verificationCode: number) {
+    //
+    const savedCode = await this.redisService.get(email);
+    if (!savedCode || savedCode !== verificationCode) {
+      throw new BadRequestException('잘못된 인증번호입니다.');
     }
-  }
 
-  async sendVerificationEmail(email: string) {
-    const verificationCode = crypto.randomBytes(16).toString('hex');
-    await this.redisService.set(verificationCode, email, 'EX', 3600); // 1시간 동안 유효
-
-    const subject = '이메일 인증';
-    const text = `인증 번호: ${verificationCode}`;
-    await this.sendMail(email, subject, text);
+    // redis에 저장된 이메일 인증번호 삭제
+    await this.redisService.del(email);
+    return;
   }
 
   async signUp(signUpDto: SignUpDto) {

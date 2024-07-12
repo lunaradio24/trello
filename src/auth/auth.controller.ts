@@ -3,15 +3,11 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { redisStrategy } from './strategies/redis.strategy';
 
 @Controller('auth')
 export class AuthController {
   emailService: any;
-  constructor(
-    private readonly authService: AuthService,
-    private readonly redisStrategy: redisStrategy,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('sign-up')
   async signUp(@Body() signUpDto: SignUpDto) {
@@ -54,26 +50,17 @@ export class AuthController {
 
   @Post('send-email')
   async sendEmail(@Body() body: { email: string }) {
-    await this.authService.sendVerificationEmail(body.email);
+    await this.authService.sendMail(body.email);
     return {
       message: '이메일 전송에 성공했습니다.',
     };
   }
 
   @Post('verify-email')
-  async verifyEmail(@Query('email') code: string) {
-    const email = await this.redisStrategy.get(code);
-
-    if (!email) {
-      return {
-        message: '잘못되었거나 만료된 인증 코드입니다.',
-      };
-    }
-    await this.redisStrategy.del(code);
-
+  async verifyEmail(@Body() body) {
+    await this.authService.verifyEmail(body.email, body.code);
     return {
-      message: '이메일 인증이 완료되었습니다.',
-      email,
+      message: '이메일 인증에 성공했습니다.',
     };
   }
 }
