@@ -13,8 +13,8 @@ import { UserService } from 'src/user/user.service';
 import { LocalStrategy } from './strategies/local.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { createClient } from 'redis';
-import { redisStrategy } from './strategies/redis.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { EmailService } from '../email/email.service';
+import { RedisService } from '../redis/redis.service';
 
 @Module({
   imports: [
@@ -38,27 +38,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    UserService,
-    AccessTokenStrategy,
-    RefreshTokenStrategy,
-    LocalStrategy,
-    redisStrategy,
-    JwtStrategy,
-    {
-      provide: 'REDIS',
-      useFactory: (configService: ConfigService) => {
-        const client = createClient({
-          url: `redis://${configService.get('REDIS_HOST')}:${configService.get('REDIS_PORT')}`,
-        });
-        client.on('error', (err) => console.error('Redis Client Error', err));
-        client.connect();
-        return client;
-      },
-      inject: [ConfigService],
-    },
-  ],
+  providers: [AuthService, UserService, AccessTokenStrategy, RefreshTokenStrategy, EmailService, RedisService],
   exports: [PassportModule, JwtModule],
 })
 export class AuthModule {}

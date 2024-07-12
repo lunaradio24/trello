@@ -13,8 +13,8 @@ export class CardController {
   }
 
   @Get(':id')
-  async findCardById(@Param('id') id: number) {
-    return this.cardService.findCardById(+id);
+  async getCardById(@Param('id') id: number) {
+    return this.cardService.getCardById(+id);
   }
 
   @Patch(':id')
