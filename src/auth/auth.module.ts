@@ -10,9 +10,7 @@ import { RefreshToken } from './entities/refresh-token.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
-import { LocalStrategy } from './strategies/local.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { createClient } from 'redis';
 import { EmailService } from '../email/email.service';
 import { RedisService } from '../redis/redis.service';
 

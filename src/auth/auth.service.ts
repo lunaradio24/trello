@@ -1,6 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { compare, hash } from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
@@ -9,7 +8,6 @@ import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { sign } from 'jsonwebtoken';
 import { RefreshToken } from './entities/refresh-token.entity';
-// import { JwtPayload } from './constants/jwt-payload.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
@@ -30,16 +28,17 @@ export class AuthService {
   ) {}
 
   async sendMail(email: string) {
+    // 이메일 인증코드 생성
     const code = generateRandomNumber();
-    console.log('보낼 데이터: ', email, code);
-    //이메일과 인증토큰 저장
-    await this.redisService.setcode(email, code);
+    // redis에 인증코드 저장
+    await this.redisService.set(email, code);
     // 이메일 전송
-    await this.emailService.sendEmailVerificationCode(email);
+    const isSuccess = await this.emailService.sendEmailVerificationCode(email);
+    return isSuccess ?? false;
   }
 
   async verifyEmail(email: string, verificationCode: number) {
-    //
+    // redis에 저장된 이메일 인증번호 가져와서 입력받은 숫자와 비교
     const savedCode = await this.redisService.get(email);
     if (!savedCode || savedCode !== verificationCode) {
       throw new BadRequestException('잘못된 인증번호입니다.');
@@ -47,7 +46,7 @@ export class AuthService {
 
     // redis에 저장된 이메일 인증번호 삭제
     await this.redisService.del(email);
-    return;
+    return true;
   }
 
   async signUp(signUpDto: SignUpDto) {

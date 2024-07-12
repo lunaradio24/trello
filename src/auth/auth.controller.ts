@@ -50,17 +50,19 @@ export class AuthController {
 
   @Post('send-email')
   async sendEmail(@Body() body: { email: string }) {
-    await this.authService.sendMail(body.email);
+    const isSuccess = await this.authService.sendMail(body.email);
     return {
       message: '이메일 전송에 성공했습니다.',
+      data: { isSuccess },
     };
   }
 
   @Post('verify-email')
-  async verifyEmail(@Body() body) {
-    await this.authService.verifyEmail(body.email, body.code);
+  async verifyEmail(@Body() body: { email: string; code: number }) {
+    const isVerifiedCode = await this.authService.verifyEmail(body.email, body.code);
     return {
       message: '이메일 인증에 성공했습니다.',
+      data: { isVerifiedCode },
     };
   }
 }
