@@ -15,16 +15,16 @@ export class CardService {
   ) {}
 
   async createCard(createCardDto: CreateCardDto, user: User): Promise<Card> {
-    const { title, list_id } = createCardDto;
-    const list = await this.cardRepository.findOne({ where: { id: list_id } });
+    const { title, listId } = createCardDto;
+    const list = await this.cardRepository.findOne({ where: { id: listId } });
 
     if (!list) {
       throw new Error('해당 리스트가 없습니다.');
     }
 
     const card = this.cardRepository.create({
-      user_id: user.id,
-      list_id: list.id,
+      userId: user.id,
+      listId: list.id,
       title: title,
     });
 

@@ -12,7 +12,7 @@ import {
 
 @Entity({ name: 'checklists' })
 export class Checklist {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
   @Column({ type: 'int', nullable: false })

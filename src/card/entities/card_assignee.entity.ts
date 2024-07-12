@@ -13,7 +13,7 @@ import { User } from 'src/user/entities/user.entity';
 
 @Entity({ name: 'card_assignees' })
 export class CardAssignee {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
   @Column({ name: 'card_id', type: 'int', nullable: false })

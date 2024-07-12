@@ -16,7 +16,7 @@ import { CardAssignee } from 'src/card/entities/card_assignee.entity';
 
 @Entity({ name: 'users' })
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
   @Column({ type: 'varchar', unique: true, nullable: false })
