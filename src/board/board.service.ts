@@ -10,8 +10,9 @@ export class BoardService {
   constructor(@InjectRepository(Board) private readonly boardRepository: Repository<Board>) {}
 
   async create(createBoardDto: CreateBoardDto) {
-    const { title, backgroundColor } = createBoardDto;
+    const { title, backgroundColor, adminId } = createBoardDto;
     const board = await this.boardRepository.save({
+      adminId,
       title,
       backgroundColor,
     });
