@@ -22,6 +22,7 @@ export class BoardController {
     };
   }
 
+  @UseGuards(AccessTokenGuard)
   @Get('/')
   async findAll(@Req() req: any) {
     // userId에 맞는 boards 찾기 필요
@@ -34,6 +35,7 @@ export class BoardController {
     };
   }
 
+  @UseGuards(AccessTokenGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
     // lists와 cards 모두 출력되도록 변경 필요

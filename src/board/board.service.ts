@@ -10,12 +10,13 @@ export class BoardService {
   constructor(@InjectRepository(Board) private readonly boardRepository: Repository<Board>) {}
 
   async create(userId: number, createBoardDto: CreateBoardDto) {
-    const { title, backgroundColor } = createBoardDto;
+    const { title, backgroundColor, description } = createBoardDto;
     // adminId를 userId로 등록
     const board = await this.boardRepository.save({
       adminId: userId,
       title,
       backgroundColor,
+      description,
     });
     return board;
   }
@@ -45,7 +46,7 @@ export class BoardService {
   }
 
   async delete(id: number) {
-    const deletingBoard = await this.boardRepository.delete(id)
+    const deletingBoard = await this.boardRepository.delete(id);
     return;
   }
 }

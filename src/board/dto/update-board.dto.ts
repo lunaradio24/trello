@@ -10,4 +10,8 @@ export class UpdateBoardDto extends PartialType(CreateBoardDto) {
   @IsOptional()
   @IsHexColor()
   backgroundColor?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 }

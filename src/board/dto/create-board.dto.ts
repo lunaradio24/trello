@@ -10,4 +10,8 @@ export class CreateBoardDto {
 
   @IsHexColor()
   backgroundColor: string;
+
+  @IsNotEmpty({ message: '보드 설명을 입력해주세요.' })
+  @IsString()
+  description: string;
 }
