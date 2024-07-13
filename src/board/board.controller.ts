@@ -54,7 +54,6 @@ export class BoardController {
   @UseGuards(AccessTokenGuard)
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateBoardDto: UpdateBoardDto) {
-    // 수정 권한에 대해 생각 필요
     const { title, backgroundColor } = updateBoardDto;
     const updatedBoard = await this.boardService.update(+id, updateBoardDto);
     return {

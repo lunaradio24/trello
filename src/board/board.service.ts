@@ -4,6 +4,7 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './entities/board.entity';
 import { Repository } from 'typeorm';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class BoardService {
@@ -32,6 +33,9 @@ export class BoardService {
         id,
       },
     });
+    if (!board) {
+      throw new NotFoundError('보드가 존재하지 않습니다.');
+    }
     return board;
   }
 
