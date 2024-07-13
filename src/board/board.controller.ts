@@ -1,18 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Req, UseGuards } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
 @Controller('boards')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
   /** 보드 생성 */
+  @UseGuards(AccessTokenGuard)
   @Post('/')
   async create(@Body() createBoardDto: CreateBoardDto, @Req() req: any) {
-    // userId로 adminId 지정 필요
-    // const userId = num(req.user.id)
-    const board = await this.boardService.create(createBoardDto);
+    // userId로 adminId 지정
+    const userId = Number(req.user.id);
+    const board = await this.boardService.create(userId, createBoardDto);
     return {
       status: HttpStatus.CREATED,
       message: '보드 생성에 성공했습니다.',
@@ -43,6 +45,7 @@ export class BoardController {
     };
   }
 
+  @UseGuards(AccessTokenGuard)
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateBoardDto: UpdateBoardDto) {
     // 수정 권한에 대해 생각 필요
@@ -55,6 +58,7 @@ export class BoardController {
     };
   }
 
+  @UseGuards(AccessTokenGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     // 삭제 권한에 대해 생각 필요

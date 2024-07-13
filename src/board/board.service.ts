@@ -9,10 +9,11 @@ import { Repository } from 'typeorm';
 export class BoardService {
   constructor(@InjectRepository(Board) private readonly boardRepository: Repository<Board>) {}
 
-  async create(createBoardDto: CreateBoardDto) {
-    const { title, backgroundColor, adminId } = createBoardDto;
+  async create(userId: number, createBoardDto: CreateBoardDto) {
+    const { title, backgroundColor } = createBoardDto;
+    // adminId를 userId로 등록
     const board = await this.boardRepository.save({
-      adminId,
+      adminId: userId,
       title,
       backgroundColor,
     });
