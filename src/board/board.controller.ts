@@ -53,9 +53,10 @@ export class BoardController {
 
   @UseGuards(AccessTokenGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateBoardDto: UpdateBoardDto) {
+  async update(@Param('id') id: string, @Req() req: any, @Body() updateBoardDto: UpdateBoardDto) {
+    const userId = Number(req.user.id);
     const { title, backgroundColor } = updateBoardDto;
-    const updatedBoard = await this.boardService.update(+id, updateBoardDto);
+    const updatedBoard = await this.boardService.update(+id, userId, updateBoardDto);
     return {
       status: HttpStatus.OK,
       message: '보드 수정에 성공했습니다.',
