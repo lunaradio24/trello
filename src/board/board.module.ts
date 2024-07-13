@@ -8,9 +8,10 @@ import { List } from 'src/list/entities/list.entity';
 import { Card } from 'src/card/entities/card.entity';
 import { CardService } from 'src/card/card.service';
 import { CardAssignee } from 'src/card/entities/card_assignee.entity';
+import { BoardMember } from './entities/board-member.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Board, List, Card, CardAssignee])],
+  imports: [TypeOrmModule.forFeature([Board, List, Card, CardAssignee, BoardMember])],
   controllers: [BoardController],
   providers: [BoardService, ListService, CardService],
 })

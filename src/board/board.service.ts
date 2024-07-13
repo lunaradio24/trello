@@ -1,14 +1,20 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './entities/board.entity';
 import { Repository } from 'typeorm';
 import { NotFoundError } from 'rxjs';
+import { BoardMember } from './entities/board-member.entity';
+import { BoardMemberType } from './types/board-member.type';
 
 @Injectable()
 export class BoardService {
-  constructor(@InjectRepository(Board) private readonly boardRepository: Repository<Board>) {}
+  constructor(
+    @InjectRepository(Board) private readonly boardRepository: Repository<Board>,
+    @InjectRepository(BoardMember)
+    private readonly boardMemberRepository: Repository<BoardMember>,
+  ) {}
 
   async create(userId: number, createBoardDto: CreateBoardDto) {
     const { title, backgroundColor, description } = createBoardDto;
@@ -18,6 +24,12 @@ export class BoardService {
       title,
       backgroundColor,
       description,
+    });
+
+    const boardMember = await this.boardMemberRepository.save({
+      boardId: board.id,
+      memberId: userId,
+      memberType: BoardMemberType.ADMIN,
     });
     return board;
   }
