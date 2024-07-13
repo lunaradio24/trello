@@ -3,10 +3,14 @@ import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { ListService } from 'src/list/list.service';
 
 @Controller('boards')
 export class BoardController {
-  constructor(private readonly boardService: BoardService) {}
+  constructor(
+    private readonly boardService: BoardService,
+    private readonly listService: ListService,
+  ) {}
 
   /** 보드 생성 */
   @UseGuards(AccessTokenGuard)
@@ -38,10 +42,12 @@ export class BoardController {
   async findOne(@Param('id') id: string) {
     // lists와 cards 모두 출력되도록 변경 필요
     const board = await this.boardService.findOne(+id);
+    const lists = await this.listService.findAll(+id);
     return {
       status: HttpStatus.OK,
       message: '보드 상세 조회에 성공했습니다.',
       board,
+      lists,
     };
   }
 
