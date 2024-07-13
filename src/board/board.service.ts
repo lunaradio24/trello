@@ -39,7 +39,7 @@ export class BoardService {
     return board;
   }
 
-  async update(id: number, userId, updateBoardDto: UpdateBoardDto) {
+  async update(id: number, userId: number, updateBoardDto: UpdateBoardDto) {
     const board = await this.boardRepository.findOne({
       where: {
         id,
@@ -61,7 +61,19 @@ export class BoardService {
     return updatedBoard;
   }
 
-  async delete(id: number) {
+  async delete(id: number, userId: number) {
+    const board = await this.boardRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!board) {
+      throw new NotFoundError('보드가 존재하지 않습니다.');
+    }
+    // board의 admin만 삭제 가능
+    if (userId !== board.adminId) {
+      throw new UnauthorizedException('삭제 권한이 없습니다.');
+    }
     const deletingBoard = await this.boardRepository.delete(id);
     return;
   }

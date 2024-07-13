@@ -42,6 +42,7 @@ export class BoardController {
   async findOne(@Param('id') id: string) {
     // lists와 cards 모두 출력되도록 변경 필요
     const board = await this.boardService.findOne(+id);
+    // boardId가 포함된 lists 불러오기
     const lists = await this.listService.findAll(+id);
     return {
       status: HttpStatus.OK,
@@ -66,10 +67,10 @@ export class BoardController {
 
   @UseGuards(AccessTokenGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    // 삭제 권한에 대해 생각 필요
+  async remove(@Param('id') id: string, @Req() req: any) {
     // board 삭제 시 lists와 cards 함께 삭제 필요
-    const delededBoard = await this.boardService.delete(+id);
+    const userId = Number(req.user.id);
+    const delededBoard = await this.boardService.delete(+id, userId);
     return {
       status: HttpStatus.OK,
       message: '보드 삭제에 성공했습니다.',
