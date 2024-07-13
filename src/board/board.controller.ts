@@ -25,8 +25,6 @@ export class BoardController {
   @UseGuards(AccessTokenGuard)
   @Get('/')
   async findAll(@Req() req: any) {
-    // userId에 맞는 boards 찾기 필요
-    // const userId = req.user.id;
     const boards = await this.boardService.findAll();
     return {
       status: HttpStatus.OK,
