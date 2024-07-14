@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Req, Query, UseGuards } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { ListService } from 'src/list/list.service';
 import { CardService } from 'src/card/card.service';
+import { EmailService } from 'src/email/email.service';
 
 @Controller('boards')
 export class BoardController {
@@ -84,5 +85,26 @@ export class BoardController {
       status: HttpStatus.OK,
       message: '보드 삭제에 성공했습니다.',
     };
+  }
+
+  @Post(':id/invite')
+  async sendVerificationEmail(@Param('id') id: number, @Body('boardId') boardId: number, @Body('email') email: string) {
+    const token = await this.boardService.sendVerificationEmail(id, boardId, email);
+    console.log(token);
+    return {
+      message: '초대 링크가 전송되었습니다.',
+      token,
+    };
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Query('token') token: string) {
+    const email = await this.boardService.verifyEmailToken(token);
+    console.log(email);
+    return {
+      message: '이메일 인증 성공!',
+    };
+
+    // 유효한 토큰인 경우 추가 로직 수행 (예: 사용자 이메일 검증 상태 업데이트)
   }
 }

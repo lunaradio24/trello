@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { BoardController } from './board.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BoardMember } from './entities/board-member.entity';
 import { Board } from './entities/board.entity';
 import { ListService } from 'src/list/list.service';
 import { List } from 'src/list/entities/list.entity';
 import { Card } from 'src/card/entities/card.entity';
 import { CardService } from 'src/card/card.service';
 import { CardAssignee } from 'src/card/entities/card_assignee.entity';
-import { BoardMember } from './entities/board-member.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, List, Card, CardAssignee, BoardMember])],

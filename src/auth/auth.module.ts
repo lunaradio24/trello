@@ -13,6 +13,7 @@ import { UserService } from 'src/user/user.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailService } from '../email/email.service';
 import { RedisService } from '../redis/redis.service';
+import { LocalStrategy } from './strategies/local.strategy';
 
 @Module({
   imports: [
@@ -36,7 +37,15 @@ import { RedisService } from '../redis/redis.service';
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, AccessTokenStrategy, RefreshTokenStrategy, EmailService, RedisService],
+  providers: [
+    AuthService,
+    UserService,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+    EmailService,
+    RedisService,
+    LocalStrategy,
+  ],
   exports: [PassportModule, JwtModule],
 })
 export class AuthModule {}
