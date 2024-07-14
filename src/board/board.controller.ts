@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Req, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Req, UseGuards, Query } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
@@ -41,16 +41,16 @@ export class BoardController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const board = await this.boardService.findOne(+id);
+  @Get(':boardId')
+  async findOne(@Param('boardId') boardId: string) {
+    const board = await this.boardService.findOne(+boardId);
     // boardId가 포함된 lists 불러오기
-    const lists = await this.listService.findAll(+id);
+    const lists = await this.listService.findAll(+boardId);
     console.log(lists);
     // listId가 포함된 cards 불러오기
     const cardsOfLists = await Promise.all(
       lists.map(async (list) => {
-        const cards = await this.cardService.findAll(list.id);
+        const cards = await this.cardService.findAll(list.boardId);
         return cards;
       }),
     );
@@ -63,11 +63,11 @@ export class BoardController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Patch(':id')
-  async update(@Param('id') id: string, @Req() req: any, @Body() updateBoardDto: UpdateBoardDto) {
+  @Patch(':boardId')
+  async update(@Param('boardId') boardId: string, @Req() req: any, @Body() updateBoardDto: UpdateBoardDto) {
     const userId = Number(req.user.id);
     const { title, backgroundColor } = updateBoardDto;
-    const updatedBoard = await this.boardService.update(+id, userId, updateBoardDto);
+    const updatedBoard = await this.boardService.update(+boardId, userId, updateBoardDto);
     return {
       status: HttpStatus.OK,
       message: '보드 수정에 성공했습니다.',
@@ -76,11 +76,11 @@ export class BoardController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Delete(':id')
-  async remove(@Param('id') id: string, @Req() req: any) {
+  @Delete(':boardId')
+  async remove(@Param('boardId') boardId: string, @Req() req: any) {
     // board 삭제 시 lists와 cards 함께 삭제 필요
     const userId = Number(req.user.id);
-    const delededBoard = await this.boardService.delete(+id, userId);
+    const delededBoard = await this.boardService.delete(+boardId, userId);
     return {
       status: HttpStatus.OK,
       message: '보드 삭제에 성공했습니다.',
