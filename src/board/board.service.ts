@@ -8,6 +8,7 @@ import { EmailService } from 'src/email/email.service';
 import { User } from 'src/user/entities/user.entity';
 import { BoardMember } from './entities/board-member.entity';
 import { BoardMemberType } from './types/board-member.type';
+import { NotFoundError } from 'rxjs/internal/util/NotFoundError';
 
 @Injectable()
 export class BoardService {
