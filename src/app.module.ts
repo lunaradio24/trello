@@ -7,6 +7,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { CommentModule } from './comment/comment.module';
+import { BoardModule } from './board/board.module';
 import { EmailModule } from './email/email.module';
 import { RedisModule } from './redis/redis.module';
 import { CardModule } from './card/card.module';
@@ -58,6 +59,7 @@ const mailerModuleOptions = {
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     AuthModule,
     UserModule,
+    BoardModule,
     CommentModule,
     EmailModule,
     RedisModule,

@@ -40,7 +40,7 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ select: false })
   deletedAt: Date;
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)

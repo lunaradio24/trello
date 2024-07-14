@@ -1,5 +1,3 @@
-// src/email/email.service.ts
-
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransporter } from 'src/utils/email.util';
@@ -7,6 +5,7 @@ import * as crypto from 'crypto';
 import { from } from 'rxjs';
 import { createRedisClient } from 'src/utils/redis.util';
 import { Redis } from '@upstash/redis';
+import { generateRandomNumber } from 'src/utils/generate-random-code.util';
 
 @Injectable()
 export class EmailService {
@@ -23,8 +22,8 @@ export class EmailService {
     this.redis = createRedisClient(redisUrl, redisToken);
   }
 
-  async sendEmailVerificationCode(email: string): Promise<string> {
-    const verificationCode = crypto.randomBytes(3).toString('hex');
+  async sendEmailVerificationCode(email: string): Promise<boolean> {
+    const verificationCode = generateRandomNumber();
     const mailOptions = {
       from: this.configService.get('EMAIL_USER'),
       to: email,
@@ -33,7 +32,7 @@ export class EmailService {
     };
 
     await this.transporter.sendMail(mailOptions);
-    return verificationCode;
+    return true;
   }
 
   async sendEmailVerificationLink(email: string): Promise<string> {
