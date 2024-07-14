@@ -55,8 +55,9 @@ export class BoardController {
 
   @UseGuards(AccessTokenGuard)
   @Get(':boardId')
-  async findOne(@Param('boardId') boardId: number) {
-    const board = await this.boardService.findOne(boardId);
+  async findOne(@Param('boardId') boardId: number, @Req() req: any) {
+    const userId = Number(req.user.id);
+    const board = await this.boardService.findOne(boardId, userId);
     // boardId가 포함된 lists 불러오기
     const lists = await this.listService.findAll(boardId);
     // listId가 포함된 cards 불러오기
