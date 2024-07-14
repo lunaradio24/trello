@@ -27,6 +27,9 @@ export class Board {
   @Column({ name: 'background_color', type: 'varchar', default: '#A52A2A' })
   backgroundColor: string;
 
+  @Column({ type: 'text' })
+  description: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

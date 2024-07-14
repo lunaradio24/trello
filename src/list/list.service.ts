@@ -76,4 +76,10 @@ export class ListService {
     await this.listsRepository.save(list);
     return list;
   }
+
+  // board 상세조회 시 lists 불러오기
+  async findAll(boardId: number) {
+    const lists = await this.listsRepository.findBy({ boardId });
+    return lists;
+  }
 }
