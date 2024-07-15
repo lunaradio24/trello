@@ -16,16 +16,20 @@ import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from '../s3/s3.service';
+import { ApiTags } from '@nestjs/swagger';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
-@Controller('user')
+@ApiTags('Users')
+@Controller('users/me')
+@UseGuards(AccessTokenGuard)
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly s3Service: S3Service,
   ) {}
 
-  @UseGuards(AccessTokenGuard)
-  @Get('/me')
+  /** 내 정보 조회 */
+  @Get()
   async findMe(@Request() req) {
     const userId = req.user.id;
     const data = await this.userService.findOneById(userId);
@@ -36,43 +40,48 @@ export class UserController {
       data,
     };
   }
+  
 
-  @UseGuards(AccessTokenGuard)
-  @Post('/image')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@Request() req, @UploadedFile() file: Express.MulterS3.File) {
-    const userId = req.user.id;
-    console.log(file);
-    const [fileName, fileExt] = file.originalname.split('.');
-    const fileUrl = await this.s3Service.imageUploadToS3(`${Date.now()}_${fileName}`, file, fileExt);
-    console.log(fileName);
-    console.log(fileExt);
-    const updatedMe = await this.userService.updateUserImage(userId, fileUrl);
-
+    /** 비밀번호 변경 */
+  @Patch('update-password')
+  async updatePassword(@Request() req: any, @Body() updatePasswordDto: UpdatePasswordDto) {
+        const userId = req.user.id;
+    const { updatedAt } = await this.userService.updatePassword(userId, updatePasswordDto);
     return {
-      message: 'file uploaded successfully',
-      fileUrl, // the URL of the uploaded file in S3
+      status: HttpStatus.OK,
+      message: '비밀번호 수정에 성공했습니다.',
+      data: { updatedAt },
     };
-  }
-
-  @UseGuards(AccessTokenGuard)
-  @Patch('me')
-  @UseInterceptors(FileInterceptor('image'))
-  async updateMe(@Request() req, @UploadedFile() file, @Body() updateMeDto: UpdateMeDto, @Response() res) {
-    const userId = req.user.id;
-
-    if (file) {
-      console.log('File uploaded:', file); // 파일 정보 로그 출력
-      updateMeDto.image = file.location; // S3 업로드 후 파일 URL 설정
-    } else {
-      console.log('No file uploaded');
     }
 
+    /** 내 정보 수정 */
+  @Patch('update')
+  async updateMe(@Request() req: any, @Body() updateMeDto: UpdateMeDto) {
+    const userId = req.user.id;
     const updatedMe = await this.userService.updateMe(userId, updateMeDto);
-    return res.status(HttpStatus.OK).json({
+    return {
       statusCode: HttpStatus.OK,
       message: '내 정보 수정에 성공했습니다.',
       data: updatedMe,
-    });
+    };
+  }
+
+  
+  /** 프로필 이미지 업데이트 */
+  @Post('update-image')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(@Request() req, @UploadedFile() file: Express.MulterS3.File) {
+    const userId = req.user.id;
+
+    const [fileName, fileExt] = file.originalname.split('.');
+    const fileUrl = await this.s3Service.imageUploadToS3(`${Date.now()}_${fileName}`, file, fileExt);
+
+    const updatedMe = await this.userService.updateUserImage(userId, fileUrl);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: '이미지 업로드에 성공했습니다.',
+      fileUrl, // the URL of the uploaded file in S3
+    };
   }
 }
