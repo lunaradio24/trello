@@ -4,7 +4,6 @@ import { createTransporter } from 'src/utils/email.util';
 import { createRedisClient } from 'src/utils/redis.util';
 import { Redis } from '@upstash/redis';
 import { sign } from 'jsonwebtoken';
-import { generateRandomNumber } from 'src/utils/generate-random-code.util';
 
 @Injectable()
 export class EmailService {
@@ -23,13 +22,12 @@ export class EmailService {
     this.redis = createRedisClient(redisUrl, redisToken);
   }
 
-  async sendEmailVerificationCode(email: string): Promise<boolean> {
-    const verificationCode = generateRandomNumber();
+  async sendEmailVerificationCode(email: string, code: number): Promise<boolean> {
     const mailOptions = {
       from: this.configService.get('EMAIL_USER'),
       to: email,
       subject: '회원가입 이메일 인증번호입니다.',
-      text: `${verificationCode} 인증번호를 회원가입 창에서 입력해주세요`,
+      text: `${code} 인증번호를 회원가입 창에서 입력해주세요`,
     };
 
     await this.transporter.sendMail(mailOptions);
