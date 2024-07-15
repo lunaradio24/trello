@@ -12,8 +12,8 @@ export class EmailService {
   private invitationKey: string;
 
   constructor(private readonly configService: ConfigService) {
-    const emailUser = this.configService.get('EMAIL_USER');
-    const emailPass = this.configService.get('EMAIL_PASS');
+    const emailUser = this.configService.get('EMAIL_USERNAME');
+    const emailPass = this.configService.get('EMAIL_PASSWORD');
     this.transporter = createTransporter(emailUser, emailPass);
 
     const redisUrl = this.configService.get('REDIS_HOST');

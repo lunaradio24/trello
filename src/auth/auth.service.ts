@@ -40,7 +40,10 @@ export class AuthService {
   async verifyEmail(email: string, code: number) {
     // redis에 저장된 이메일 인증번호 가져와서 입력받은 숫자와 비교
     const savedCode = await this.redisService.get(email);
-    if (!savedCode || savedCode !== code) {
+    if (!savedCode) {
+      throw new BadRequestException('인증코드를 재발송해주세요.');
+    }
+    if (savedCode !== code) {
       throw new BadRequestException('잘못된 인증번호입니다.');
     }
 
