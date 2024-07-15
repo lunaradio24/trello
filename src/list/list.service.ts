@@ -155,7 +155,7 @@ export class ListService {
   }
 
   // board 상세조회 시 lists 불러오기
-  async findAll(boardId: number) {
+  async findAllBoards(boardId: number) {
     const lists = await this.listsRepository.findBy({ boardId });
     return lists;
   }

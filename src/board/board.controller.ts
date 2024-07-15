@@ -45,12 +45,12 @@ export class BoardController {
   async findOne(@Param('id') id: string) {
     const board = await this.boardService.findOne(+id);
     // boardId가 포함된 lists 불러오기
-    const lists = await this.listService.findAll(+id);
+    const lists = await this.listService.findAllBoards(+id);
     console.log(lists);
     // listId가 포함된 cards 불러오기
     const cardsOfLists = await Promise.all(
       lists.map(async (list) => {
-        const cards = await this.cardService.findAll(list.id);
+        const cards = await this.cardService.findAllBoards(list.id);
         return cards;
       }),
     );

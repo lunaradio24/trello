@@ -52,7 +52,7 @@ export class BoardService {
       },
     });
     if (!board) {
-      throw new NotFoundError('보드가 존재하지 않습니다.');
+      throw new NotFoundException('보드가 존재하지 않습니다.');
     }
     return board;
   }
@@ -64,7 +64,7 @@ export class BoardService {
       },
     });
     if (!board) {
-      throw new NotFoundError('보드가 존재하지 않습니다.');
+      throw new NotFoundException('보드가 존재하지 않습니다.');
     }
     // board의 admin만 수정 가능
     if (userId !== board.adminId) {
@@ -86,7 +86,7 @@ export class BoardService {
       },
     });
     if (!board) {
-      throw new NotFoundError('보드가 존재하지 않습니다.');
+      throw new NotFoundException('보드가 존재하지 않습니다.');
     }
     // board의 admin만 삭제 가능
     if (userId !== board.adminId) {

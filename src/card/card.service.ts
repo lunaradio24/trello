@@ -95,7 +95,7 @@ export class CardService {
   }
 
   // board 상세조회 시 cards 가져오기
-  async findAll(listId: number) {
+  async findAllBoards(listId: number) {
     const cards = await this.cardRepository.find({
       where: {
         list: {
