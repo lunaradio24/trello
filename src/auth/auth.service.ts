@@ -33,14 +33,14 @@ export class AuthService {
     // redis에 인증코드 저장
     await this.redisService.set(email, code);
     // 이메일 전송
-    const isSuccess = await this.emailService.sendEmailVerificationCode(email);
+    const isSuccess = await this.emailService.sendEmailVerificationCode(email, code);
     return isSuccess ?? false;
   }
 
-  async verifyEmail(email: string, verificationCode: number) {
+  async verifyEmail(email: string, code: number) {
     // redis에 저장된 이메일 인증번호 가져와서 입력받은 숫자와 비교
     const savedCode = await this.redisService.get(email);
-    if (!savedCode || savedCode !== verificationCode) {
+    if (!savedCode || savedCode !== code) {
       throw new BadRequestException('잘못된 인증번호입니다.');
     }
 

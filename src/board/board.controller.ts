@@ -18,7 +18,6 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { ListService } from 'src/list/list.service';
 import { CardService } from 'src/card/card.service';
-import { EmailService } from 'src/email/email.service';
 
 @Controller('boards')
 export class BoardController {

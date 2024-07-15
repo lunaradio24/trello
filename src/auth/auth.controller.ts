@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { SendEmailDto } from './dto/send-email.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -49,8 +51,8 @@ export class AuthController {
   }
 
   @Post('send-email')
-  async sendEmail(@Body() body: { email: string }) {
-    const isSuccess = await this.authService.sendMail(body.email);
+  async sendEmail(@Body() sendEmailDto: SendEmailDto) {
+    const isSuccess = await this.authService.sendMail(sendEmailDto.email);
     return {
       message: '이메일 전송에 성공했습니다.',
       data: { isSuccess },
@@ -58,8 +60,8 @@ export class AuthController {
   }
 
   @Post('verify-email')
-  async verifyEmail(@Body() body: { email: string; code: number }) {
-    const isVerifiedCode = await this.authService.verifyEmail(body.email, body.code);
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    const isVerifiedCode = await this.authService.verifyEmail(verifyEmailDto.email, verifyEmailDto.code);
     return {
       message: '이메일 인증에 성공했습니다.',
       data: { isVerifiedCode },
