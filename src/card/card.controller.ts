@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ParseIntPipe,
+  HttpStatus,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -36,6 +49,7 @@ export class CardController {
 
   /** 카드 수정 */
   @Patch(':cardId')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async updateCardById(@Param('cardId', ParseIntPipe) cardId: number, @Body() updateCardDto: UpdateCardDto) {
     const updateCard = await this.cardService.updateCardById(cardId, updateCardDto);
     return {
@@ -51,11 +65,17 @@ export class CardController {
     @Param('cardId', ParseIntPipe) cardId: number,
     @Param('assigneeId', ParseIntPipe) assIgneeId: number,
   ) {
-    const createAssignee = await this.cardService.addAssignee(cardId, assIgneeId);
+    const { cardAssignee, user } = await this.cardService.addAssignee(cardId, assIgneeId);
     return {
       status: HttpStatus.OK,
       message: '카드 담당자를 추가했습니다.',
-      data: createAssignee,
+      data: {
+        cardAssignee,
+        user: {
+          id: user.id,
+          email: user.email,
+        },
+      },
     };
   }
 
