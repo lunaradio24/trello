@@ -12,6 +12,7 @@ import { BoardMemberType } from './types/board-member.type';
 @Injectable()
 export class BoardService {
   redisService: any;
+  connection: any;
   constructor(
     @InjectRepository(Board)
     private readonly boardRepository: Repository<Board>,
@@ -40,27 +41,45 @@ export class BoardService {
     return board;
   }
 
-  async findAll() {
-    const boards = await this.boardRepository.find();
-    return boards;
+  async findAll(userId: number) {
+    const joinedBoardMembers = await this.boardMemberRepository.find({
+      where: {
+        memberId: userId,
+      },
+      relations: ['board'],
+    });
+    const joinedBoards = joinedBoardMembers.map((boardMember) => boardMember.board);
+    return joinedBoards;
   }
 
-  async findOne(id: number) {
+  async findOne(boardId: number, memberId: number) {
     const board = await this.boardRepository.findOne({
       where: {
-        id,
+        id: boardId,
+        deletedAt: null,
       },
     });
     if (!board) {
       throw new NotFoundException('보드가 존재하지 않습니다.');
     }
+    const boardMember = await this.boardMemberRepository.findOne({
+      where: {
+        boardId,
+        memberId,
+        deletedAt: null,
+      },
+    });
+    if (!boardMember) {
+      throw new UnauthorizedException('조회 권한이 없습니다.');
+    }
     return board;
   }
 
-  async update(id: number, userId: number, updateBoardDto: UpdateBoardDto) {
+  async update(boardId: number, userId: number, updateBoardDto: UpdateBoardDto) {
     const board = await this.boardRepository.findOne({
       where: {
-        id,
+        id: boardId,
+        deletedAt: null,
       },
     });
     if (!board) {
@@ -70,19 +89,21 @@ export class BoardService {
     if (userId !== board.adminId) {
       throw new UnauthorizedException('수정 권한이 없습니다.');
     }
-    const updatingBoard = await this.boardRepository.update(id, updateBoardDto);
+    const updatingBoard = await this.boardRepository.update(boardId, updateBoardDto);
     const updatedBoard = await this.boardRepository.findOne({
       where: {
-        id,
+        id: boardId,
+        deletedAt: null,
       },
     });
     return updatedBoard;
   }
 
-  async delete(id: number, userId: number) {
+  async delete(boardId: number, userId: number) {
     const board = await this.boardRepository.findOne({
       where: {
-        id,
+        id: boardId,
+        deletedAt: null,
       },
     });
     if (!board) {
@@ -92,7 +113,7 @@ export class BoardService {
     if (userId !== board.adminId) {
       throw new UnauthorizedException('삭제 권한이 없습니다.');
     }
-    const deletingBoard = await this.boardRepository.delete(id);
+    const deletingBoard = await this.boardRepository.delete(boardId);
     return;
   }
 
