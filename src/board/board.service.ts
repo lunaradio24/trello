@@ -122,8 +122,15 @@ export class BoardService {
     if (userId !== board.adminId) {
       throw new UnauthorizedException('삭제 권한이 없습니다.');
     }
-    const deletedBoard = await this.boardRepository.softDelete(boardId);
-    return deletedBoard;
+    await this.boardRepository.softDelete(boardId);
+    const deletedBoard = await this.boardRepository.findOne({
+      where: {
+        id: boardId,
+      },
+      withDeleted: true,
+      select: ['id', 'deletedAt'],
+    });
+    return { boardId, deletedAt: deletedBoard.deletedAt };
   }
 
   async sendVerificationEmail(boardId: number, email: string, userId: number): Promise<string> {
