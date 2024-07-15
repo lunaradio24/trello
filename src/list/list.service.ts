@@ -114,10 +114,9 @@ export class ListService {
     await this.listsRepository.save(lists);
   }
 
-  async findAll(): Promise<List[]> {
-    return this.listsRepository.find({
-      order: { position: 'ASC' },
-    });
+  async findAll(boardId: number) {
+    const lists = await this.listsRepository.findBy({ boardId });
+    return lists;
   }
 
   // board 상세조회 시 lists 불러오기
