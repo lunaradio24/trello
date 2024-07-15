@@ -37,24 +37,22 @@ export class ListService {
     return this.listsRepository.save(newList);
   }
 
-  async findOne(listId: number): Promise<List> {
-    const list = await this.listsRepository.findOne({ where: { id: listId } });
+  async findOne(boardId: number, listId: number): Promise<List> {
+    const list = await this.listsRepository.findOne({ where: { id: listId, boardId } });
     if (!list) {
-      throw new NotFoundException(`해당 리스트의 ${listId}를 찾을 수 없습니다.`);
+      throw new NotFoundException(`해당 보드의 ${listId} 리스트를 찾을 수 없습니다.`);
     }
     return list;
   }
 
-  async update(listId: number, updateListDto: UpdateListDto): Promise<List> {
+  async update(boardId: number, listId: number, updateListDto: UpdateListDto): Promise<List> {
+    const list = await this.findOne(boardId, listId);
     await this.listsRepository.update(listId, updateListDto);
-    return this.findOne(listId);
+    return this.findOne(boardId, listId);
   }
 
-  async remove(listId: number): Promise<{ id: number; deletedAt: Date }> {
-    const list = await this.listsRepository.findOne({ where: { id: listId }, withDeleted: true });
-    if (!list) {
-      throw new NotFoundException(`해당 리스트의 ${listId}를 찾을 수 없습니다.`);
-    }
+  async remove(boardId: number, listId: number): Promise<{ id: number; deletedAt: Date }> {
+    const list = await this.findOne(boardId, listId);
     if (list.deletedAt) {
       throw new ConflictException(`해당 리스트는 이미 삭제되었습니다.`);
     }
@@ -66,13 +64,14 @@ export class ListService {
   async move(listId: number, moveListDto: MoveListDto): Promise<List> {
     const { boardId, targetListId, position } = moveListDto;
 
-    const list = await this.findOne(listId);
+    const list = await this.findOne(boardId, listId);
     if (!list) {
       throw new NotFoundException('해당 리스트를 찾을 수 없습니다.');
     }
 
-    if (list.boardId !== boardId) {
-      throw new BadRequestException('리스트가 동일한 보드에 있어야 합니다.');
+    const targetBoard = await this.listsRepository.findOne({ where: { id: boardId } });
+    if (!targetBoard) {
+      throw new NotFoundException('옮길 리스트를 찾을 수 없습니다.');
     }
 
     const targetLists = await this.listsRepository.find({
@@ -119,13 +118,19 @@ export class ListService {
     list.position = newPosition;
 
     // Check if rebalancing is needed
-    if (newPosition % 1 < 0.2) {
-      const factor = 1024;
-      for (let i = 0; i < targetLists.length; i++) {
-        targetLists[i].position = factor * Math.pow(2, i);
+    const minPositionDifference = 1;
+    for (let i = 1; i < targetLists.length; i++) {
+      if (targetLists[i].position - targetLists[i - 1].position < minPositionDifference) {
+        const factor = 1024;
+        for (let j = 0; j < targetLists.length; j++) {
+          targetLists[j].position = factor * (j + 1);
+        }
+        await this.listsRepository.save(targetLists);
+        newPosition = factor * Math.pow(2, targetLists.length);
+        list.position = newPosition;
+        await this.listsRepository.save(list);
+        break;
       }
-      await this.listsRepository.save(targetLists);
-      newPosition = factor * Math.pow(2, targetLists.length);
     }
 
     await this.listsRepository.save(list);

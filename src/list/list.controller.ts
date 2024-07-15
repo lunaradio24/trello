@@ -49,7 +49,8 @@ export class ListController {
   /** 리스트 수정 */
   @Patch(':listId')
   async update(@Param('listId', ParseIntPipe) listId: number, @Body() updateListDto: UpdateListDto) {
-    const updatedList = await this.listService.update(listId, updateListDto);
+    const { boardId } = updateListDto;
+    const updatedList = await this.listService.update(boardId, listId, updateListDto);
     return {
       status: HttpStatus.OK,
       message: '리스트 업데이트에 성공했습니다.',
@@ -60,6 +61,7 @@ export class ListController {
   /** 리스트 이동 */
   @Patch(':listId/move')
   async move(@Param('listId', ParseIntPipe) listId: number, @Body() moveListDto: MoveListDto) {
+    const { boardId } = moveListDto;
     const movedList = await this.listService.move(listId, moveListDto);
     return {
       status: HttpStatus.OK,
@@ -70,8 +72,8 @@ export class ListController {
 
   /** 리스트 삭제 */
   @Delete(':listId')
-  async remove(@Param('listId', ParseIntPipe) listId: number) {
-    const deletedList = await this.listService.remove(listId);
+  async remove(@Param('listId', ParseIntPipe) listId: number, @Body('boardId', ParseIntPipe) boardId: number) {
+    const deletedList = await this.listService.remove(boardId, listId);
     return {
       status: HttpStatus.OK,
       message: '해당 리스트를 삭제했습니다.',
