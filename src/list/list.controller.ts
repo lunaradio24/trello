@@ -1,42 +1,74 @@
-import { Controller, Post, Body, Patch, Param, Delete, UseGuards, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Get,
+  Query,
+  ParseIntPipe,
+  HttpStatus,
+} from '@nestjs/common';
 import { ListService } from './list.service';
 import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { MoveListDto } from './dto/move-list.dto';
-import { List } from './entities/list.entity';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
+@UseGuards(AccessTokenGuard)
 @Controller('lists')
 export class ListController {
   constructor(private readonly listService: ListService) {}
 
   @Post()
-  @UseGuards(AccessTokenGuard)
-  async create(@Body() createListDto: CreateListDto): Promise<List> {
-    return await this.listService.create(createListDto);
+  async create(@Body() createListDto: CreateListDto) {
+    const createdList = await this.listService.create(createListDto);
+    return {
+      status: HttpStatus.CREATED,
+      message: '리스트 생성에 성공했습니다.',
+      data: createdList,
+    };
   }
 
-  @Patch(':id')
-  @UseGuards(AccessTokenGuard)
-  async update(@Param('id') id: string, @Body() updateListDto: UpdateListDto): Promise<List> {
-    return this.listService.update(+id, updateListDto);
+  @Patch(':listId')
+  async update(@Param('listId', ParseIntPipe) listId: number, @Body() updateListDto: UpdateListDto) {
+    const updatedList = await this.listService.update(listId, updateListDto);
+    return {
+      status: HttpStatus.OK,
+      message: '리스트 업데이트에 성공했습니다.',
+      data: updatedList,
+    };
   }
 
-  @Patch(':id/move')
-  @UseGuards(AccessTokenGuard)
-  async move(@Param('id') id: string, @Body() moveListDto: MoveListDto): Promise<List> {
-    return this.listService.move(+id, moveListDto);
+  @Patch(':listId/move')
+  async move(@Param('listId', ParseIntPipe) listId: number, @Body() moveListDto: MoveListDto) {
+    const movedList = await this.listService.move(listId, moveListDto);
+    return {
+      status: HttpStatus.OK,
+      message: '리스트 이동에 성공했습니다.',
+      data: movedList,
+    };
   }
 
-  @Delete(':id')
-  @UseGuards(AccessTokenGuard)
-  async remove(@Param('id') id: string): Promise<{ message: string }> {
-    await this.listService.remove(+id);
-    return { message: '해당 리스트를 삭제했습니다.' };
+  @Delete(':listId')
+  async remove(@Param('listId', ParseIntPipe) listId: number) {
+    const deletedList = await this.listService.remove(listId);
+    return {
+      status: HttpStatus.OK,
+      message: '해당 리스트를 삭제했습니다.',
+      data: deletedList,
+    };
   }
 
   @Get()
-  async findAll(): Promise<List[]> {
-    return this.listService.findAll();
+  async findAll(@Query('boardId') boardId: number) {
+    const lists = await this.listService.findAll(boardId);
+    return {
+      status: HttpStatus.OK,
+      message: '리스트 조회에 성공했습니다.',
+      data: lists,
+    };
   }
 }
