@@ -50,6 +50,7 @@ export class BoardService {
     const board = await this.boardRepository.findOne({
       where: {
         id: boardId,
+        deletedAt: null,
       },
     });
     if (!board) {
@@ -59,10 +60,11 @@ export class BoardService {
       where: {
         boardId,
         memberId,
+        deletedAt: null,
       },
     });
     if (!boardMember) {
-      throw new UnauthorizedException('조회 권한이 업습니다.');
+      throw new UnauthorizedException('조회 권한이 없습니다.');
     }
     return board;
   }
@@ -71,6 +73,7 @@ export class BoardService {
     const board = await this.boardRepository.findOne({
       where: {
         id: boardId,
+        deletedAt: null,
       },
     });
     if (!board) {
@@ -84,6 +87,7 @@ export class BoardService {
     const updatedBoard = await this.boardRepository.findOne({
       where: {
         id: boardId,
+        deletedAt: null,
       },
     });
     return updatedBoard;
@@ -93,6 +97,7 @@ export class BoardService {
     const board = await this.boardRepository.findOne({
       where: {
         id: boardId,
+        deletedAt: null,
       },
     });
     if (!board) {
