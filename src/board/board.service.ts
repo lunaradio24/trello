@@ -41,9 +41,15 @@ export class BoardService {
     return board;
   }
 
-  async findAll() {
-    const boards = await this.boardRepository.find();
-    return boards;
+  async findAll(userId: number) {
+    const joinedBoardMembers = await this.boardMemberRepository.find({
+      where: {
+        memberId: userId,
+      },
+      relations: ['board'],
+    });
+    const joinedBoards = joinedBoardMembers.map((boardMember) => boardMember.board);
+    return joinedBoards;
   }
 
   async findOne(boardId: number, memberId: number) {

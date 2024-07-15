@@ -43,9 +43,10 @@ export class BoardController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Get('/')
+  @Get('/joined')
   async findAll(@Req() req: any) {
-    const boards = await this.boardService.findAll();
+    const userId = Number(req.user.id);
+    const boards = await this.boardService.findAll(userId);
     return {
       status: HttpStatus.OK,
       message: '보드 목록 조회에 성공했습니다.',
@@ -59,11 +60,11 @@ export class BoardController {
     const userId = Number(req.user.id);
     const board = await this.boardService.findOne(boardId, userId);
     // boardId가 포함된 lists 불러오기
-    const lists = await this.listService.findAll(boardId);
+    const lists = await this.listService.findAllBoards(boardId);
     // listId가 포함된 cards 불러오기
     const cardsOfLists = await Promise.all(
       lists.map(async (list) => {
-        const cards = await this.cardService.findAll(list.id);
+        const cards = await this.cardService.findAllBoards(list.id);
         return cards;
       }),
     );
