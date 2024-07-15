@@ -38,7 +38,7 @@ export class ListService {
   }
 
   async findOne(boardId: number, listId: number): Promise<List> {
-    const list = await this.listsRepository.findOne({ where: { id: listId, boardId }, withDeleted: true });
+    const list = await this.listsRepository.findOne({ where: { id: listId, boardId } });
     if (!list) {
       throw new NotFoundException(`해당 보드의 ${listId} 리스트를 찾을 수 없습니다.`);
     }
@@ -52,7 +52,10 @@ export class ListService {
   }
 
   async remove(boardId: number, listId: number): Promise<{ id: number; deletedAt: Date }> {
-    const list = await this.findOne(boardId, listId);
+    const list = await this.listsRepository.findOne({ where: { id: listId, boardId }, withDeleted: true });
+    if (!list) {
+      throw new NotFoundException(`해당 보드의 ${listId} 리스트를 찾을 수 없습니다.`);
+    }
     if (list.deletedAt) {
       throw new ConflictException(`해당 리스트는 이미 삭제되었습니다.`);
     }
