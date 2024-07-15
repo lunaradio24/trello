@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -56,6 +56,7 @@ export class CardService {
     const card = await this.cardRepository.findOne({
       where: { id },
       relations: ['checklists', 'attachments', 'cardAssignees', 'comments'],
+      order: { position: 'DESC' },
     });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
@@ -96,7 +97,7 @@ export class CardService {
 
   //카드 이동 API
   async moveCardById(cardId: number, moveCardDto: MoveCardDto): Promise<Card> {
-    const { listId: targetListId } = moveCardDto;
+    const { listId: targetListId, targetCardId, position } = moveCardDto;
 
     const card = await this.cardRepository.findOne({ where: { id: cardId } });
     if (!card) {
@@ -108,27 +109,47 @@ export class CardService {
       throw new NotFoundException('옮길 리스트를 찾을 수 없습니다.');
     }
 
-    //내림차순으로 가져오기
+    //오름차순으로 가져와 포지션 계산
     const targetListCards = await this.cardRepository.find({
       where: { listId: targetListId },
-      order: { position: 'DESC' },
+      order: { position: 'ASC' },
     });
 
-    /**
-     * 1.리스트에 카드가 없다면 1024
-     * 2.리스트에 뒤에만 카드가 있다면 뒤의 카드 나누기 2
-     * 3.리스트에 앞 뒤 카드 둘 다 있거나 뒤에 카드만 있다면 더해서 나누기 2
-     */
     let newPosition: number;
+
     if (targetListCards.length === 0) {
+      //옮길 리스트에 다른 카드가 없다면 새 카드의 포지션 값을 1024로 설정
       newPosition = 1024;
-    } else if (targetListCards.length === 1) {
-      const onlyCard = targetListCards[0];
-      newPosition = onlyCard.position / 2;
     } else {
-      const prevCard = targetListCards[targetListCards.length - 1];
-      const nextCard = targetListCards[0];
-      newPosition = (prevCard.position + nextCard.position) / 2;
+      const targetCardIndex = targetListCards.findIndex((c) => c.id === targetCardId);
+
+      if (targetCardIndex < 0) {
+        throw new BadRequestException('카드가 이동할 곳을 명확히 입력해주세요.');
+      }
+
+      const targetCard = targetListCards[targetCardIndex];
+
+      //카드가 이동할 곳이 타켓 카드의 위일 때
+      if (position === 'before') {
+        const prevCard = targetListCards[targetCardIndex - 1];
+
+        if (prevCard) {
+          newPosition = (prevCard.position + targetCard.position) / 2;
+        } else {
+          newPosition = targetCard.position / 2;
+        }
+        //카드가 이동할 곳이 타켓 카드의 아래일 때
+      } else if (position === 'after') {
+        const nextCard = targetListCards[targetCardIndex + 1];
+
+        if (nextCard) {
+          newPosition = (targetCard.position + nextCard.position) / 2;
+        } else {
+          newPosition = targetCard.position * 2;
+        }
+      } else {
+        throw new Error('Invalid position specified');
+      }
     }
 
     /**
