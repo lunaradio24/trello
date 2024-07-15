@@ -122,8 +122,8 @@ export class BoardService {
     if (userId !== board.adminId) {
       throw new UnauthorizedException('삭제 권한이 없습니다.');
     }
-    const deletingBoard = await this.boardRepository.delete(boardId);
-    return;
+    const deletedBoard = await this.boardRepository.softDelete(boardId);
+    return deletedBoard;
   }
 
   async sendVerificationEmail(boardId: number, email: string, userId: number): Promise<string> {
@@ -149,11 +149,11 @@ export class BoardService {
 
     // 링크 토큰 redis에 저장
     await this.emailService.storeTokenData(token, boardId, user.id, email);
-   
+
     return token;
   }
 
-  async accpetInvitation(boardId: number, token: string): Promise<number> {
+  async acceptInvitation(boardId: number, token: string): Promise<number> {
     const tokenData = await this.emailService.verifyTokenData(token);
 
     if (typeof tokenData === 'object' && 'message' in tokenData) {

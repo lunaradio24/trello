@@ -7,7 +7,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { SendEmailDto } from './dto/send-email.dto';
 
-
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
