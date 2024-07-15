@@ -8,11 +8,11 @@ import { EmailService } from 'src/email/email.service';
 import { User } from 'src/user/entities/user.entity';
 import { BoardMember } from './entities/board-member.entity';
 import { BoardMemberType } from './types/board-member.type';
-import { NotFoundError } from 'rxjs/internal/util/NotFoundError';
 
 @Injectable()
 export class BoardService {
   redisService: any;
+  connection: any;
   constructor(
     @InjectRepository(Board)
     private readonly boardRepository: Repository<Board>,
@@ -60,7 +60,7 @@ export class BoardService {
       },
     });
     if (!board) {
-      throw new NotFoundError('보드가 존재하지 않습니다.');
+      throw new NotFoundException('보드가 존재하지 않습니다.');
     }
     const boardMember = await this.boardMemberRepository.findOne({
       where: {
@@ -83,7 +83,7 @@ export class BoardService {
       },
     });
     if (!board) {
-      throw new NotFoundError('보드가 존재하지 않습니다.');
+      throw new NotFoundException('보드가 존재하지 않습니다.');
     }
     // board의 admin만 수정 가능
     if (userId !== board.adminId) {
@@ -107,7 +107,7 @@ export class BoardService {
       },
     });
     if (!board) {
-      throw new NotFoundError('보드가 존재하지 않습니다.');
+      throw new NotFoundException('보드가 존재하지 않습니다.');
     }
     // board의 admin만 삭제 가능
     if (userId !== board.adminId) {
