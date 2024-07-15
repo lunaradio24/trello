@@ -66,7 +66,7 @@ export class CardService {
     return card;
   }
 
-  // 카드 업데이트 API
+  // 카드 수정 API
   async updateCardById(id: number, updateCardDto: UpdateCardDto): Promise<Card> {
     const card = await this.cardRepository.update(id, updateCardDto);
     // 카드 존재 확인
@@ -74,26 +74,30 @@ export class CardService {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
+    await this.cardRepository.update(id, updateCardDto);
     return this.getCardById(id);
   }
 
   // 카드 담당자 추가 API
-  // TODO: 매소드 이름 변경(update -> add or create), 배열이 아니라 한 명씩 추가
-  // TODO: create-card.dto, update-card-dto도 그에 맞춰 변경
-  async updateAssignees(cardId: number, assigneeId: number[]): Promise<void> {
-    // 기존 Assignee 삭제
-    await this.cardAssigneeRepository.delete({ cardId });
+  async addAssignee(cardId: number, assigneeId: number): Promise<void> {
+    const card = await this.cardRepository.findOne({ where: { id: cardId } });
+    if (!card) {
+      throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
+    }
 
-    // 새로운 Assignee 추가
-    const cardAssignees = assigneeId.map((assigneeId) => ({
-      cardId,
-      assigneeId,
-    }));
-    await this.cardAssigneeRepository.save(cardAssignees);
+    const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
+    await this.cardAssigneeRepository.save(cardAssignee);
   }
 
   // 카드 담당자 삭제 API
-  // TODO: 한 명씩 삭제
+  async removeAssignee(cardId: number, assigneeId: number): Promise<void> {
+    const card = await this.cardRepository.findOne({ where: { id: cardId } });
+    if (!card) {
+      throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
+    }
+
+    await this.cardAssigneeRepository.delete({ cardId, assigneeId });
+  }
 
   //카드 이동 API
   async moveCardById(cardId: number, moveCardDto: MoveCardDto): Promise<Card> {
