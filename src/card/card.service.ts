@@ -156,7 +156,9 @@ export class CardService {
      * 소수점이 0.2미만으로 떨어지면 position 새로고침
      * 인덱스에 따라 1024의 2의 제곱으로 생성
      */
-    if (newPosition % 1 < 0.2) {
+    if (newPosition % 1 !== 0 && newPosition % 1 < 0.2) {
+      // 포지션 값들을 내림차순으로 정렬
+      targetListCards.sort((a, b) => b.position - a.position);
       const factor = 1024;
       for (let i = 0; i < targetListCards.length; i++) {
         targetListCards[i].position = factor * Math.pow(2, i);
@@ -165,12 +167,11 @@ export class CardService {
       newPosition = factor * Math.pow(2, targetListCards.length);
     }
 
-    // 새로운 카드 생성 및 기존 카드 삭제
-    const newCard = this.cardRepository.create({ ...card, listId: targetListId, position: newPosition });
-    await this.cardRepository.remove(card);
-    return this.cardRepository.save(newCard);
+    // 카드의 listId와 position 값 업데이트
+    card.list = targetList;
+    card.position = newPosition;
+    return this.cardRepository.save(card);
   }
-
   //카드 소프트 딜리트
   async removeCardById(id: number): Promise<void> {
     const card = await this.cardRepository.findOneBy({ id });
