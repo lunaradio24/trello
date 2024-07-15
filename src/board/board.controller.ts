@@ -1,12 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Req, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpStatus,
+  Req,
+  UseGuards,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { ListService } from 'src/list/list.service';
 import { CardService } from 'src/card/card.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Boards')
 @Controller('boards')
+@UseGuards(AccessTokenGuard)
 export class BoardController {
   constructor(
     private readonly boardService: BoardService,
@@ -15,7 +31,6 @@ export class BoardController {
   ) {}
 
   /** 보드 생성 */
-  @UseGuards(AccessTokenGuard)
   @Post('/')
   async create(@Body() createBoardDto: CreateBoardDto, @Req() req: any) {
     // userId로 adminId 지정
@@ -28,10 +43,11 @@ export class BoardController {
     };
   }
 
-  @UseGuards(AccessTokenGuard)
-  @Get('/')
+  /** 내가 속한 보드 목록 조회 */
+  @Get('joined')
   async findAll(@Req() req: any) {
-    const boards = await this.boardService.findAll();
+    const userId = Number(req.user.id);
+    const boards = await this.boardService.findAll(userId);
     return {
       status: HttpStatus.OK,
       message: '보드 목록 조회에 성공했습니다.',
@@ -39,34 +55,29 @@ export class BoardController {
     };
   }
 
-  @UseGuards(AccessTokenGuard)
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const board = await this.boardService.findOne(+id);
-    // boardId가 포함된 lists 불러오기
-    const lists = await this.listService.findAllBoards(+id);
-    console.log(lists);
-    // listId가 포함된 cards 불러오기
-    const cardsOfLists = await Promise.all(
-      lists.map(async (list) => {
-        const cards = await this.cardService.findAllBoards(list.id);
-        return cards;
-      }),
-    );
+  /** 보드 상세 조회 */
+  @Get(':boardId')
+  async findOne(@Param('boardId', ParseIntPipe) boardId: number, @Req() req: any) {
+    const userId = Number(req.user.id);
+    const board = await this.boardService.findOne(boardId, userId);
+
     return {
       status: HttpStatus.OK,
       message: '보드 상세 조회에 성공했습니다.',
       board,
-      lists: cardsOfLists,
     };
   }
 
-  @UseGuards(AccessTokenGuard)
-  @Patch(':id')
-  async update(@Param('id') id: string, @Req() req: any, @Body() updateBoardDto: UpdateBoardDto) {
+  /** 보드 수정 */
+  @Patch(':boardId')
+  async update(
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @Req() req: any,
+    @Body() updateBoardDto: UpdateBoardDto,
+  ) {
     const userId = Number(req.user.id);
     const { title, backgroundColor } = updateBoardDto;
-    const updatedBoard = await this.boardService.update(+id, userId, updateBoardDto);
+    const updatedBoard = await this.boardService.update(boardId, userId, updateBoardDto);
     return {
       status: HttpStatus.OK,
       message: '보드 수정에 성공했습니다.',
@@ -74,19 +85,19 @@ export class BoardController {
     };
   }
 
-  @UseGuards(AccessTokenGuard)
-  @Delete(':id')
-  async remove(@Param('id') id: string, @Req() req: any) {
+  /** 보드 삭제 */
+  @Delete(':boardId')
+  async remove(@Param('boardId', ParseIntPipe) boardId: number, @Req() req: any) {
     // board 삭제 시 lists와 cards 함께 삭제 필요
     const userId = Number(req.user.id);
-    const delededBoard = await this.boardService.delete(+id, userId);
+    const delededBoard = await this.boardService.delete(boardId, userId);
     return {
       status: HttpStatus.OK,
       message: '보드 삭제에 성공했습니다.',
     };
   }
 
-  @UseGuards(AccessTokenGuard)
+  /** 보드 초대 링크 발송 */
   @Post(':boardId/invite')
   async sendVerificationEmail(@Param('boardId') boardId: number, @Body('email') email: string, @Req() req: any) {
     const userId = req.user.id; //JWT토큰 에서 추출
@@ -98,6 +109,7 @@ export class BoardController {
     };
   }
 
+  /** 보드 초대 수락 */
   @Get(':boardId/accept-invitation')
   async accpetInvitation(@Param('boardId') boardId: number, @Query('token') token: string) {
     const invitedUserId = await this.boardService.accpetInvitation(boardId, token);

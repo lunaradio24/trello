@@ -11,8 +11,8 @@ import { List } from 'src/list/entities/list.entity';
 import { Card } from 'src/card/entities/card.entity';
 import { CardService } from 'src/card/card.service';
 import { CardAssignee } from 'src/card/entities/card_assignee.entity';
-import { User } from '../user/entities/user.entity';
-import { EmailService } from '../email/email.service';
+import { EmailService } from 'src/email/email.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, List, Card, CardAssignee, BoardMember, User])],

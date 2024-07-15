@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { List } from './entities/list.entity';
@@ -16,12 +16,17 @@ export class ListService {
   async create(createListDto: CreateListDto): Promise<List> {
     const { boardId, title } = createListDto;
 
+    const listCount = await this.listsRepository.count({ where: { boardId } });
+    if (listCount >= 12) {
+      throw new ConflictException('리스트 생성 제한을 초과했습니다.');
+    }
+
     const lastList = await this.listsRepository.findOne({
       where: { boardId },
       order: { position: 'DESC' },
     });
 
-    const position = lastList ? lastList.position + 1 : 1;
+    const position = lastList ? lastList.position * 2 : 1024;
 
     const newList = this.listsRepository.create({
       boardId,
@@ -29,7 +34,7 @@ export class ListService {
       position,
     });
 
-    return await this.listsRepository.save(newList);
+    return this.listsRepository.save(newList);
   }
 
   async findOne(listId: number): Promise<List> {
@@ -57,67 +62,82 @@ export class ListService {
     const deletedList = await this.listsRepository.findOne({ where: { id: listId }, withDeleted: true });
     return { id: deletedList.id, deletedAt: deletedList.deletedAt };
   }
-  //가중치 방식(임시)
+
   async move(listId: number, moveListDto: MoveListDto): Promise<List> {
-    const { boardId, newPosition } = moveListDto;
+    const { boardId, targetListId, position } = moveListDto;
 
     const list = await this.findOne(listId);
-    if (list.boardId !== boardId) {
-      throw new Error('보드가 존재하지 않습니다.');
+    if (!list) {
+      throw new NotFoundException('해당 리스트를 찾을 수 없습니다.');
     }
 
-    let lists = await this.listsRepository.find({
+    if (list.boardId !== boardId) {
+      throw new BadRequestException('리스트가 동일한 보드에 있어야 합니다.');
+    }
+
+    const targetLists = await this.listsRepository.find({
       where: { boardId },
       order: { position: 'ASC' },
     });
 
-    if (newPosition < 1) {
-      throw new NotFoundException(`유효하지 않은 위치입니다.`);
+    if (targetLists.length === 0) {
+      throw new NotFoundException('옮길 리스트가 없습니다.');
     }
 
-    lists = lists.filter((l) => l.id !== listId);
+    const targetListIndex = targetLists.findIndex((l) => l.id === targetListId);
+    if (targetListIndex < 0) {
+      throw new BadRequestException('리스트가 이동할 곳을 명확히 입력해주세요.');
+    }
 
-    let newWeight: number;
-    if (newPosition === 1) {
-      newWeight = lists[0].position / 2;
-    } else if (newPosition > lists.length) {
-      newWeight = lists[lists.length - 1].position + 65536;
+    let newPosition: number;
+    if (targetLists.length === 1) {
+      // 옮길 리스트에 다른 리스트가 없다면 새 리스트의 포지션 값을 1024로 설정
+      newPosition = 1024;
     } else {
-      const prevList = lists[newPosition - 2];
-      const nextList = lists[newPosition - 1];
-      newWeight = (prevList.position + nextList.position) / 2;
+      const targetList = targetLists[targetListIndex];
+      if (position === 'before') {
+        const prevList = targetLists[targetListIndex - 1];
+
+        if (prevList) {
+          newPosition = (prevList.position + targetList.position) / 2;
+        } else {
+          newPosition = targetList.position / 2;
+        }
+      } else if (position === 'after') {
+        const nextList = targetLists[targetListIndex + 1];
+
+        if (nextList) {
+          newPosition = (targetList.position + nextList.position) / 2;
+        } else {
+          newPosition = targetList.position * 2;
+        }
+      } else {
+        throw new Error('Invalid position specified');
+      }
     }
 
-    list.position = newWeight;
+    list.position = newPosition;
 
-    const minWeight = 1;
-    const maxWeight = Number.MAX_SAFE_INTEGER;
-    if (newWeight < minWeight || newWeight > maxWeight) {
-      await this.rebalanceWeights(boardId);
+    // Check if rebalancing is needed
+    if (newPosition % 1 < 0.2) {
+      const factor = 1024;
+      for (let i = 0; i < targetLists.length; i++) {
+        targetLists[i].position = factor * Math.pow(2, i);
+      }
+      await this.listsRepository.save(targetLists);
+      newPosition = factor * Math.pow(2, targetLists.length);
     }
 
     await this.listsRepository.save(list);
     return list;
   }
 
-  async rebalanceWeights(boardId: number): Promise<void> {
+  async findAll(boardId: number) {
     const lists = await this.listsRepository.find({
       where: { boardId },
       order: { position: 'ASC' },
     });
-
-    const baseWeight = 65536;
-    for (let i = 0; i < lists.length; i++) {
-      lists[i].position = baseWeight * (i + 1);
-    }
-
-    await this.listsRepository.save(lists);
-  }
-
-  async findAll(): Promise<List[]> {
-    return this.listsRepository.find({
-      order: { position: 'ASC' },
-    });
+    return lists;
   }
 
   // board 상세조회 시 lists 불러오기

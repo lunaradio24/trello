@@ -42,6 +42,6 @@ export class List {
   @JoinColumn({ name: 'board_id', referencedColumnName: 'id' })
   board: Board;
 
-  @OneToMany(() => Card, (card) => card.list)
+  @OneToMany(() => Card, (card) => card.list, { cascade: true })
   cards: Card[];
 }

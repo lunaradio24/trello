@@ -16,12 +16,15 @@ import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { MoveListDto } from './dto/move-list.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { ApiTags } from '@nestjs/swagger';
 
-@UseGuards(AccessTokenGuard)
+@ApiTags('Lists')
 @Controller('lists')
+@UseGuards(AccessTokenGuard)
 export class ListController {
   constructor(private readonly listService: ListService) {}
 
+  /** 리스트 생성 */
   @Post()
   async create(@Body() createListDto: CreateListDto) {
     const createdList = await this.listService.create(createListDto);
@@ -32,6 +35,18 @@ export class ListController {
     };
   }
 
+  /** 리스트 목록 조회 */
+  @Get()
+  async findAll(@Query('boardId') boardId: number) {
+    const lists = await this.listService.findAll(boardId);
+    return {
+      status: HttpStatus.OK,
+      message: '리스트 조회에 성공했습니다.',
+      data: lists,
+    };
+  }
+
+  /** 리스트 수정 */
   @Patch(':listId')
   async update(@Param('listId', ParseIntPipe) listId: number, @Body() updateListDto: UpdateListDto) {
     const updatedList = await this.listService.update(listId, updateListDto);
@@ -42,6 +57,7 @@ export class ListController {
     };
   }
 
+  /** 리스트 이동 */
   @Patch(':listId/move')
   async move(@Param('listId', ParseIntPipe) listId: number, @Body() moveListDto: MoveListDto) {
     const movedList = await this.listService.move(listId, moveListDto);
@@ -52,6 +68,7 @@ export class ListController {
     };
   }
 
+  /** 리스트 삭제 */
   @Delete(':listId')
   async remove(@Param('listId', ParseIntPipe) listId: number) {
     const deletedList = await this.listService.remove(listId);
@@ -59,16 +76,6 @@ export class ListController {
       status: HttpStatus.OK,
       message: '해당 리스트를 삭제했습니다.',
       data: deletedList,
-    };
-  }
-
-  @Get()
-  async findAll(@Query('boardId') boardId: number) {
-    const lists = await this.listService.findAll(boardId);
-    return {
-      status: HttpStatus.OK,
-      message: '리스트 조회에 성공했습니다.',
-      data: lists,
     };
   }
 }
