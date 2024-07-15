@@ -71,9 +71,8 @@ export class ListService {
       throw new NotFoundException('해당 리스트를 찾을 수 없습니다.');
     }
 
-    const targetBoard = await this.listsRepository.findOne({ where: { id: boardId } });
-    if (!targetBoard) {
-      throw new NotFoundException('옮길 리스트를 찾을 수 없습니다.');
+    if (list.boardId !== boardId) {
+      throw new BadRequestException('리스트가 동일한 보드에 있어야 합니다.');
     }
 
     const targetLists = await this.listsRepository.find({
@@ -81,19 +80,21 @@ export class ListService {
       order: { position: 'ASC' },
     });
 
-    let newPosition: number;
-
     if (targetLists.length === 0) {
+      throw new NotFoundException('옮길 리스트가 없습니다.');
+    }
+
+    const targetListIndex = targetLists.findIndex((l) => l.id === targetListId);
+    if (targetListIndex < 0) {
+      throw new BadRequestException('리스트가 이동할 곳을 명확히 입력해주세요.');
+    }
+
+    let newPosition: number;
+    if (targetLists.length === 1) {
+      // 옮길 리스트에 다른 리스트가 없다면 새 리스트의 포지션 값을 1024로 설정
       newPosition = 1024;
     } else {
-      const targetListIndex = targetLists.findIndex((l) => l.id === targetListId);
-
-      if (targetListIndex < 0) {
-        throw new BadRequestException('리스트가 이동할 곳을 명확히 입력해주세요.');
-      }
-
       const targetList = targetLists[targetListIndex];
-
       if (position === 'before') {
         const prevList = targetLists[targetListIndex - 1];
 
@@ -115,6 +116,9 @@ export class ListService {
       }
     }
 
+    list.position = newPosition;
+
+    // Check if rebalancing is needed
     if (newPosition % 1 < 0.2) {
       const factor = 1024;
       for (let i = 0; i < targetLists.length; i++) {
@@ -124,9 +128,8 @@ export class ListService {
       newPosition = factor * Math.pow(2, targetLists.length);
     }
 
-    const newList = this.listsRepository.create({ ...list, boardId, position: newPosition });
-    await this.listsRepository.remove(list);
-    return this.listsRepository.save(newList);
+    await this.listsRepository.save(list);
+    return list;
   }
 
   async findAll(boardId: number) {
