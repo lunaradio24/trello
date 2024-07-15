@@ -13,10 +13,10 @@ export class CardService {
   ) {}
 
   async createCard(createCardDto: CreateCardDto): Promise<Card> {
-    const { title } = createCardDto;
+    //const { title } = createCardDto;
 
     const card = this.cardRepository.create({
-      title,
+      //title,
     } as DeepPartial<Card>);
 
     const savedCard = await this.cardRepository.save(card);

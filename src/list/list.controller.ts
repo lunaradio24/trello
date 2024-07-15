@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Delete, UseGuards, Get } from '@nestjs/common';
 import { ListService } from './list.service';
 import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
@@ -30,7 +30,13 @@ export class ListController {
 
   @Delete(':id')
   @UseGuards(AccessTokenGuard)
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.listService.remove(+id);
+  async remove(@Param('id') id: string): Promise<{ message: string }> {
+    await this.listService.remove(+id);
+    return { message: '해당 리스트를 삭제했습니다.' };
+  }
+
+  @Get()
+  async findAll(): Promise<List[]> {
+    return this.listService.findAll();
   }
 }
