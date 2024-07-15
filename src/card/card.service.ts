@@ -23,7 +23,7 @@ export class CardService {
   //카드 생성 API
   async createCard(createCardDto: CreateCardDto): Promise<Card> {
     const { title, listId } = createCardDto;
-    const list = await this.cardRepository.findOneBy({ listId });
+    const list = await this.cardRepository.findOne({ where: { id: listId } });
 
     //리스트 찾기
     if (!list) {
@@ -31,20 +31,22 @@ export class CardService {
     }
 
     //카드 생성 제한
-    const cardCount = await this.cardRepository.count({ where: { listId } });
+    const cardCount = await this.cardRepository.count({ where: { list: { id: listId } } });
     if (cardCount >= 12) {
       throw new Error('카드 생성 제한을 초과했습니다.');
     }
 
-    const newCard = await this.cardRepository.findOne({
-      where: { listId },
+    // 포지션 값 계산
+    const lastCard = await this.cardRepository.findOne({
+      where: { list: { id: listId } },
       order: { position: 'DESC' },
     });
-    const position = newCard ? newCard.position * 2 : 1024;
+    const position = lastCard ? lastCard.position * 2 : 1024;
 
     const card = this.cardRepository.create({
-      listId: list.id,
+      list,
       title: title,
+      description: null,
       position,
     });
 
@@ -146,7 +148,7 @@ export class CardService {
           newPosition = targetCard.position * 2;
         }
       } else {
-        throw new Error('Invalid position specified');
+        throw new Error('포지션 값이 올바르지 않습니다.');
       }
     }
 
@@ -154,7 +156,9 @@ export class CardService {
      * 소수점이 0.2미만으로 떨어지면 position 새로고침
      * 인덱스에 따라 1024의 2의 제곱으로 생성
      */
-    if (newPosition % 1 < 0.2) {
+    if (newPosition % 1 !== 0 && newPosition % 1 < 0.2) {
+      // 포지션 값들을 내림차순으로 정렬
+      targetListCards.sort((a, b) => b.position - a.position);
       const factor = 1024;
       for (let i = 0; i < targetListCards.length; i++) {
         targetListCards[i].position = factor * Math.pow(2, i);
@@ -163,12 +167,11 @@ export class CardService {
       newPosition = factor * Math.pow(2, targetListCards.length);
     }
 
-    // 새로운 카드 생성 및 기존 카드 삭제
-    const newCard = this.cardRepository.create({ ...card, listId: targetListId, position: newPosition });
-    await this.cardRepository.remove(card);
-    return this.cardRepository.save(newCard);
+    // 카드의 listId와 position 값 업데이트
+    card.list = targetList;
+    card.position = newPosition;
+    return this.cardRepository.save(card);
   }
-
   //카드 소프트 딜리트
   async removeCardById(id: number): Promise<void> {
     const card = await this.cardRepository.findOneBy({ id });

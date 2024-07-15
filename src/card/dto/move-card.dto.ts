@@ -10,7 +10,7 @@ export class MoveCardDto {
   listId: number;
 
   /**
-   * 이동할 카드 ID
+   * 이동할 기점의 카드 ID
    * @example 1
    */
   @IsNumber()
