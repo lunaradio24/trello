@@ -52,26 +52,28 @@ export class BoardService {
     return joinedBoards;
   }
 
-  async findOne(boardId: number, memberId: number) {
+  async findOne(boardId: number, userId: number) {
     const board = await this.boardRepository.findOne({
       where: {
         id: boardId,
+        adminId: userId,
         deletedAt: null,
       },
+      relations: ['lists', 'lists.cards'],
     });
     if (!board) {
       throw new NotFoundException('보드가 존재하지 않습니다.');
     }
-    const boardMember = await this.boardMemberRepository.findOne({
-      where: {
-        boardId,
-        memberId,
-        deletedAt: null,
-      },
-    });
-    if (!boardMember) {
-      throw new UnauthorizedException('조회 권한이 없습니다.');
-    }
+    // const boardMember = await this.boardMemberRepository.findOne({
+    //   where: {
+    //     boardId,
+    //     memberId,
+    //     deletedAt: null,
+    //   },
+    // });
+    // if (!boardMember) {
+    //   throw new UnauthorizedException('조회 권한이 없습니다.');
+    // }
     return board;
   }
 
