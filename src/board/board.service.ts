@@ -96,10 +96,10 @@ export class BoardService {
     return;
   }
 
-  async sendVerificationEmail(boardId: number, email: string): Promise<string> {
+  async sendVerificationEmail(boardId: number, email: string, userId: number): Promise<string> {
     const user = await this.userRepository.findOne({ where: { email, deletedAt: null } });
     if (!user) {
-      throw new NotFoundException(`이메일 ${email}와 맞는 유저를 찾을 수 없습니다.`);
+      throw new NotFoundException(`초대할 이메일 ${email}와 맞는 유저를 찾을 수 없습니다.`);
     }
 
     const board = await this.boardRepository.findOne({ where: { id: boardId, deletedAt: null } });
@@ -108,7 +108,7 @@ export class BoardService {
     }
 
     // 보드의 어드민 아이디인지 확인
-    if (user.id !== board.adminId) {
+    if (board.adminId !== userId) {
       throw new UnauthorizedException('초대 링크를 보낼 권한이 없습니다.');
     }
 
