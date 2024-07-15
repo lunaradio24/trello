@@ -11,7 +11,6 @@ import { ListsModule } from './list/list.module';
 import { EmailModule } from './email/email.module';
 import { RedisModule } from './redis/redis.module';
 import { CardModule } from './card/card.module';
-import { BoardModule } from './board/board.module';
 import { ChecklistModule } from './checklist/checklist.module';
 
 const typeOrmModuleOptions = {
@@ -66,7 +65,6 @@ const mailerModuleOptions = {
     EmailModule,
     RedisModule,
     CardModule,
-    BoardModule,
   ],
   controllers: [],
   providers: [],
