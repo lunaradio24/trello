@@ -7,10 +7,11 @@ import { Board } from './entities/board.entity';
 import { EmailModule } from 'src/email/email.module';
 import { RedisModule } from 'src/redis/redis.module';
 import { User } from 'src/user/entities/user.entity';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([BoardMember, Board, User]), EmailModule, RedisModule],
   controllers: [BoardController],
-  providers: [BoardService],
+  providers: [BoardService, EmailService],
 })
 export class BoardModule {}
