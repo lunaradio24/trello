@@ -12,11 +12,7 @@ export class RedisService {
     this.redis = createRedisClient(redisUrl, redisToken);
   }
 
-  async set(key: string, value: string): Promise<void> {
-    await this.redis.set(key, value);
-  }
-
-  async setcode(key: string, value: number): Promise<void> {
+  async set(key: string, value: string | number): Promise<void> {
     await this.redis.set(key, value);
   }
 

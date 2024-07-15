@@ -33,7 +33,7 @@ export class Board {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ select: false })
   deletedAt: Date | null;
 
   @ManyToOne(() => User, (user) => user.boards)
