@@ -32,5 +32,5 @@ export class UpdateMeDto {
   @IsString()
   @IsOptional()
   @IsUrl({ allow_underscores: true, allow_trailing_dot: true, allow_protocol_relative_urls: true })
-  readonly image?: string;
+  image?: string;
 }
