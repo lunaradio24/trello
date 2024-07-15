@@ -99,8 +99,9 @@ export class BoardController {
 
   /** 보드 초대 링크 발송 */
   @Post(':boardId/invite')
-  async sendVerificationEmail(@Param('boardId') boardId: number, @Body('email') email: string) {
-    const token = await this.boardService.sendVerificationEmail(boardId, email);
+  async sendVerificationEmail(@Param('boardId') boardId: number, @Body('email') email: string, @Req() req: any) {
+    const userId = req.user.id; //JWT토큰 에서 추출
+    const token = await this.boardService.sendVerificationEmail(boardId, email, userId);
     console.log(token);
     return {
       message: '초대 링크가 전송되었습니다.',
