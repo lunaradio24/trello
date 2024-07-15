@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class MoveListDto {
   /**
@@ -14,6 +14,10 @@ export class MoveListDto {
    * @example 2
    */
   @IsNumber()
-  @IsNotEmpty({ message: '새로 옮길 위치를 입력해주세요.' })
-  newPosition: number;
+  @IsOptional()
+  targetListId?: number;
+
+  @IsString()
+  @IsNotEmpty({ message: '위치를 입력해주세요.' })
+  position: 'before' | 'after';
 }
