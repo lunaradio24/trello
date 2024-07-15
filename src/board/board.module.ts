@@ -6,12 +6,17 @@ import { BoardMember } from './entities/board-member.entity';
 import { Board } from './entities/board.entity';
 import { EmailModule } from 'src/email/email.module';
 import { RedisModule } from 'src/redis/redis.module';
-import { User } from 'src/user/entities/user.entity';
-import { EmailService } from 'src/email/email.service';
+import { ListService } from 'src/list/list.service';
+import { List } from 'src/list/entities/list.entity';
+import { Card } from 'src/card/entities/card.entity';
+import { CardService } from 'src/card/card.service';
+import { CardAssignee } from 'src/card/entities/card_assignee.entity';
+import { User } from '../user/entities/user.entity';
+import { EmailService } from '../email/email.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BoardMember, Board, User]), EmailModule, RedisModule],
+  imports: [TypeOrmModule.forFeature([Board, List, Card, CardAssignee, BoardMember, User])],
   controllers: [BoardController],
-  providers: [BoardService, EmailService],
+  providers: [BoardService, ListService, CardService, EmailService],
 })
 export class BoardModule {}
