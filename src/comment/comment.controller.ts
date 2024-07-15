@@ -57,6 +57,7 @@ export class CommentController {
     };
   }
 
+  /** 댓글 수정 */
   @Patch(':commentId')
   async update(
     @Request() req: any,
@@ -72,6 +73,7 @@ export class CommentController {
     };
   }
 
+  /** 댓글 삭제 */
   @Delete(':commentId')
   async delete(@Request() req: any, @Param('commentId', ParseIntPipe) commentId: number, @Body() cardId: number) {
     const { id: userId } = req.user;

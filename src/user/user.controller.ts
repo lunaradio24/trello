@@ -22,6 +22,8 @@ export class UserController {
       data,
     };
   }
+
+  /** 내 정보 수정 */
   @Patch('/me')
   async updateMe(@Request() req, @Body() updateMeDto: UpdateMeDto) {
     const userId = req.user.id;

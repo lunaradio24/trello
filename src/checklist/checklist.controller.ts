@@ -23,6 +23,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class ChecklistController {
   constructor(private readonly checklistService: ChecklistService) {}
 
+  /** 체크리스트 생성 */
   @Post()
   async create(@Body() createChecklistDto: CreateChecklistDto) {
     const createdChecklist = await this.checklistService.create(createChecklistDto);
@@ -33,6 +34,7 @@ export class ChecklistController {
     };
   }
 
+  /** 체크리스트 목록 조회 */
   @Get()
   async getList(@Query('cardId', ParseIntPipe) cardId: number) {
     const checklists = await this.checklistService.getListByCardId(cardId);
@@ -43,6 +45,7 @@ export class ChecklistController {
     };
   }
 
+  /** 체크리스트 체크 */
   @Post(':checklistId/check')
   async check(@Param('checklistId', ParseIntPipe) checklistId: number) {
     const { checkedAt } = await this.checklistService.check(checklistId);
@@ -53,6 +56,7 @@ export class ChecklistController {
     };
   }
 
+  /** 체크리스트 언체크 */
   @Post(':checklistId/uncheck')
   async uncheck(@Param('checklistId', ParseIntPipe) checklistId: number) {
     const { uncheckedAt } = await this.checklistService.uncheck(checklistId);
@@ -63,6 +67,7 @@ export class ChecklistController {
     };
   }
 
+  /** 체크리스트 수정 */
   @Patch(':checklistId')
   async update(
     @Param('checklistId', ParseIntPipe) checklistId: number,
@@ -76,6 +81,7 @@ export class ChecklistController {
     };
   }
 
+  /** 체크리스트 삭제 */
   @Delete(':checklistId')
   async delete(@Param('checklistId', ParseIntPipe) checklistId: number) {
     await this.checklistService.delete(checklistId);
