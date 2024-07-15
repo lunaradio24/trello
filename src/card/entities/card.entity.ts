@@ -36,7 +36,7 @@ export class Card {
   color: string;
 
   @Column({ type: 'datetime', default: null })
-  due_date: Date;
+  dueDate: Date;
 
   @CreateDateColumn()
   createdAt: Date;

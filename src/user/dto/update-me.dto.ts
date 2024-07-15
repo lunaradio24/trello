@@ -1,29 +1,36 @@
-import { IsNotEmpty, IsOptional, IsString, IsUrl, Validate } from 'class-validator';
-import { IsPasswordMatchingConstraint } from '../../auth/password-match.decorator';
+import { IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class UpdateMeDto {
+  /**
+   * 비밀번호
+   * @example "example1234!"
+   */
   @IsString()
   @IsNotEmpty({ message: '비밀번호를 입력해주세요.' })
   readonly password: string;
 
-  // @IsString()
-  // @IsNotEmpty({ message: '비밀번호 확인을 입력해주세요.' })
-  // @Validate(IsPasswordMatchingConstraint, { message: '비밀번호와 비밀번호 확인이 일치하지 않습니다.' })
-  // readonly passwordConfirm: string;
-
+  /**
+   * 닉네임
+   * @example "코난"
+   */
   @IsString()
   @IsOptional()
-  // @IsNotEmpty({ message: '이름을 입력해주세요.' })
   readonly nickname?: string;
 
+  /**
+   * 자기소개
+   * @example "내 이름은 탐정, 코난이죠"
+   */
   @IsString()
   @IsOptional()
-  // @IsNotEmpty({ message: '자기소개를 입력해주세요.' })
   readonly bio?: string;
 
+  /**
+   * 프로필 이미지
+   * @example "conan.png"
+   */
   @IsString()
   @IsOptional()
   @IsUrl({ allow_underscores: true, allow_trailing_dot: true, allow_protocol_relative_urls: true })
-  // @IsNotEmpty({ message: '프로필 사진을 입력해주세요.' })
   readonly image?: string;
 }
