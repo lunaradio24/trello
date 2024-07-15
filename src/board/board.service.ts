@@ -3,7 +3,7 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './entities/board.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { EmailService } from 'src/email/email.service';
 import { User } from 'src/user/entities/user.entity';
 import { BoardMember } from './entities/board-member.entity';
@@ -14,6 +14,7 @@ export class BoardService {
   redisService: any;
   connection: any;
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(Board)
     private readonly boardRepository: Repository<Board>,
     @InjectRepository(User)
@@ -24,21 +25,37 @@ export class BoardService {
   ) {}
 
   async create(userId: number, createBoardDto: CreateBoardDto) {
-    const { title, backgroundColor, description } = createBoardDto;
-    // adminId를 userId로 등록
-    const board = await this.boardRepository.save({
-      adminId: userId,
-      title,
-      backgroundColor,
-      description,
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
 
-    const boardMember = await this.boardMemberRepository.save({
-      boardId: board.id,
-      memberId: userId,
-      memberType: BoardMemberType.ADMIN,
-    });
-    return board;
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const { title, backgroundColor, description } = createBoardDto;
+      // adminId를 userId로 등록
+      const board = this.boardRepository.create({
+        adminId: userId,
+        title,
+        backgroundColor,
+        description,
+      });
+      const savingBoard = await queryRunner.manager.save(Board, board);
+
+      const boardMember = this.boardMemberRepository.create({
+        board: savingBoard,
+        memberId: userId,
+        memberType: BoardMemberType.ADMIN,
+      });
+      const savingBoardMember = await queryRunner.manager.save(BoardMember, boardMember);
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+
+      return savingBoard;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+      console.error(err);
+      throw err;
+    }
   }
 
   async findAll(userId: number) {
@@ -64,16 +81,6 @@ export class BoardService {
     if (!board) {
       throw new NotFoundException('보드가 존재하지 않습니다.');
     }
-    // const boardMember = await this.boardMemberRepository.findOne({
-    //   where: {
-    //     boardId,
-    //     memberId,
-    //     deletedAt: null,
-    //   },
-    // });
-    // if (!boardMember) {
-    //   throw new UnauthorizedException('조회 권한이 없습니다.');
-    // }
     return board;
   }
 
