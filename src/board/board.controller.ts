@@ -56,7 +56,7 @@ export class BoardController {
 
   @UseGuards(AccessTokenGuard)
   @Get(':boardId')
-  async findOne(@Param('boardId') boardId: number, @Req() req: any) {
+  async findOne(@Param('boardId', ParseIntPipe) boardId: number, @Req() req: any) {
     const userId = Number(req.user.id);
     const board = await this.boardService.findOne(boardId, userId);
     // boardId가 포함된 lists 불러오기
@@ -78,7 +78,11 @@ export class BoardController {
 
   @UseGuards(AccessTokenGuard)
   @Patch(':boardId')
-  async update(@Param('boardId') boardId: number, @Req() req: any, @Body() updateBoardDto: UpdateBoardDto) {
+  async update(
+    @Param('boardId', ParseIntPipe) boardId: number,
+    @Req() req: any,
+    @Body() updateBoardDto: UpdateBoardDto,
+  ) {
     const userId = Number(req.user.id);
     const { title, backgroundColor } = updateBoardDto;
     const updatedBoard = await this.boardService.update(boardId, userId, updateBoardDto);
@@ -91,7 +95,7 @@ export class BoardController {
 
   @UseGuards(AccessTokenGuard)
   @Delete(':boardId')
-  async remove(@Param('boardId') boardId: number, @Req() req: any) {
+  async remove(@Param('boardId', ParseIntPipe) boardId: number, @Req() req: any) {
     // board 삭제 시 lists와 cards 함께 삭제 필요
     const userId = Number(req.user.id);
     const delededBoard = await this.boardService.delete(boardId, userId);
