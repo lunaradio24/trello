@@ -1,7 +1,7 @@
 import { IsEmail, IsNotEmpty, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class VerifyEmail {
+export class VerifyEmailDto {
   @IsEmail()
   @IsNotEmpty({ message: '이메일을 입력해주세요.' })
   readonly email: string;
