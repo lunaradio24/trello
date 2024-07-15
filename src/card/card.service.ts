@@ -23,7 +23,7 @@ export class CardService {
   //카드 생성 API
   async createCard(createCardDto: CreateCardDto): Promise<Card> {
     const { title, listId } = createCardDto;
-    const list = await this.cardRepository.findOneBy({ listId });
+    const list = await this.cardRepository.findOne({ where: { id: listId } });
 
     //리스트 찾기
     if (!list) {
@@ -31,20 +31,22 @@ export class CardService {
     }
 
     //카드 생성 제한
-    const cardCount = await this.cardRepository.count({ where: { listId } });
+    const cardCount = await this.cardRepository.count({ where: { list: { id: listId } } });
     if (cardCount >= 12) {
       throw new Error('카드 생성 제한을 초과했습니다.');
     }
 
-    const newCard = await this.cardRepository.findOne({
-      where: { listId },
+    // 포지션 값 계산
+    const lastCard = await this.cardRepository.findOne({
+      where: { list: { id: listId } },
       order: { position: 'DESC' },
     });
-    const position = newCard ? newCard.position * 2 : 1024;
+    const position = lastCard ? lastCard.position * 2 : 1024;
 
     const card = this.cardRepository.create({
-      listId: list.id,
+      list,
       title: title,
+      description: null,
       position,
     });
 
@@ -148,7 +150,7 @@ export class CardService {
           newPosition = targetCard.position * 2;
         }
       } else {
-        throw new Error('Invalid position specified');
+        throw new Error('포지션 값이 올바르지 않습니다.');
       }
     }
 

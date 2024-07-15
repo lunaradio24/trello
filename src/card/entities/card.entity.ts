@@ -26,16 +26,16 @@ export class Card {
   @Column({ type: 'varchar' })
   title: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', default: null })
   description: string;
 
   @Column({ type: 'float' })
   position: number;
 
-  @Column({ type: 'varchar', length: 7 })
+  @Column({ type: 'varchar', length: 7, default: null })
   color: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', default: null })
   due_date: Date;
 
   @CreateDateColumn()
