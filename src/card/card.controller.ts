@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, HttpStatus } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -12,26 +12,51 @@ export class CardController {
 
   @Post()
   async createCard(@Body() createCardDto: CreateCardDto) {
-    return this.cardService.createCard(createCardDto);
+    const card = await this.cardService.createCard(createCardDto);
+    return {
+      status: HttpStatus.OK,
+      message: '카드 생성에 성공했습니다.',
+      data: card,
+    };
   }
 
-  @Get(':id')
-  async getCardById(@Param('id') id: number) {
-    return this.cardService.getCardById(+id);
+  @Get(':cardId')
+  async getCardById(@Param('cardId', ParseIntPipe) cardId: number) {
+    const getCard = await this.cardService.getCardById(cardId);
+    return {
+      status: HttpStatus.OK,
+      message: '카드 상세 조회에 성공했습니다.',
+      data: getCard,
+    };
   }
 
-  @Patch(':id')
-  async updateCardById(@Param('id') id: number, @Body() updateCardDto: UpdateCardDto) {
-    return this.cardService.updateCardById(+id, updateCardDto);
+  @Patch(':cardId')
+  async updateCardById(@Param('cardId', ParseIntPipe) cardId: number, @Body() updateCardDto: UpdateCardDto) {
+    const updateCard = await this.cardService.updateCardById(cardId, updateCardDto);
+    return {
+      status: HttpStatus.OK,
+      message: '카드 수정에 성공했습니다.',
+      data: updateCard,
+    };
   }
 
-  @Patch(':id/move')
-  async moveCardById(@Param('id') id: number, @Body() moveCardDto: MoveCardDto) {
-    return this.cardService.moveCardById(+id, moveCardDto);
+  @Post(':cardId/move')
+  async moveCardById(@Param('cardId', ParseIntPipe) cardId: number, @Body() moveCardDto: MoveCardDto) {
+    const moveCard = await this.cardService.moveCardById(cardId, moveCardDto);
+    return {
+      status: HttpStatus.OK,
+      message: '카드 이동에 성공했습니다.',
+      data: moveCard,
+    };
   }
 
-  @Delete(':id')
-  async removeCardById(@Param('id') id: number) {
-    return this.cardService.removeCardById(+id);
+  @Delete(':cardId')
+  async removeCardById(@Param('cardId', ParseIntPipe) cardId: number) {
+    const removeCard = await this.cardService.removeCardById(cardId);
+    return {
+      status: HttpStatus.OK,
+      message: '카드 삭제에 성공했습니다.',
+      data: removeCard,
+    };
   }
 }
