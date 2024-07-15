@@ -58,7 +58,7 @@ export class CardController {
   }
 
   /** 카드 이동 */
-  @Put(':cardId/move')
+  @Patch(':cardId/move')
   async moveCardById(@Param('cardId', ParseIntPipe) cardId: number, @Body() moveCardDto: MoveCardDto) {
     const moveCard = await this.cardService.moveCardById(cardId, moveCardDto);
     return {
