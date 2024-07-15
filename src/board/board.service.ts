@@ -132,6 +132,16 @@ export class BoardService {
       throw new NotFoundException(`이메일 ${email}와 맞는 유저를 찾을 수 없습니다.`);
     }
 
+    const board = await this.boardRepository.findOne({ where: { id: boardId } });
+    if (!board) {
+      throw new NotFoundException(`보드 ID ${boardId}를 찾을 수 없습니다.`);
+    }
+
+    // 보드의 어드민 아이디인지 확인
+    if (user.id !== board.adminId) {
+      throw new UnauthorizedException('초대 링크를 보낼 권한이 없습니다.');
+    }
+
     const token = await this.emailService.sendEmailVerificationLink(email, boardId, user.id);
     await this.emailService.storeTokenData(token, boardId, user.id, email);
     console.log(boardId, typeof boardId);
