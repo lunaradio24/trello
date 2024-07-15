@@ -66,24 +66,19 @@ export class CardService {
 
   // 카드 업데이트 API
   async updateCardById(id: number, updateCardDto: UpdateCardDto): Promise<Card> {
-    const { assigneeId, ...cardData } = updateCardDto;
-
-    const card = await this.cardRepository.update(id, cardData);
-
+    const card = await this.cardRepository.update(id, updateCardDto);
     // 카드 존재 확인
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
-    // Assignee 업데이트
-    if (assigneeId) {
-      await this.updateAssignees(id, assigneeId);
-    }
-
     return this.getCardById(id);
   }
 
-  private async updateAssignees(cardId: number, assigneeId: number[]): Promise<void> {
+  // 카드 담당자 추가 API
+  // TODO: 매소드 이름 변경(update -> add or create), 배열이 아니라 한 명씩 추가
+  // TODO: create-card.dto, update-card-dto도 그에 맞춰 변경
+  async updateAssignees(cardId: number, assigneeId: number[]): Promise<void> {
     // 기존 Assignee 삭제
     await this.cardAssigneeRepository.delete({ cardId });
 
@@ -94,6 +89,9 @@ export class CardService {
     }));
     await this.cardAssigneeRepository.save(cardAssignees);
   }
+
+  // 카드 담당자 삭제 API
+  // TODO: 한 명씩 삭제
 
   //카드 이동 API
   async moveCardById(cardId: number, moveCardDto: MoveCardDto): Promise<Card> {
@@ -157,7 +155,7 @@ export class CardService {
      * 인덱스에 따라 1024의 2의 제곱으로 생성
      */
     if (newPosition % 1 < 0.2) {
-      let factor = 1024;
+      const factor = 1024;
       for (let i = 0; i < targetListCards.length; i++) {
         targetListCards[i].position = factor * Math.pow(2, i);
       }

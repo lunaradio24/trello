@@ -15,12 +15,15 @@ import {
 import { CommentService } from './comment.service';
 import { CommentDto } from './dto/comment.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Comments')
 @Controller('comments')
 @UseGuards(AccessTokenGuard)
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
+  /** 댓글 생성 */
   @Post()
   async create(@Request() req: any, @Body() commentDto: CommentDto) {
     const { id: userId } = req.user;
@@ -32,6 +35,7 @@ export class CommentController {
     };
   }
 
+  /** 댓글 목록 조회 */
   @Get()
   async getListByCardId(@Query('cardId', ParseIntPipe) cardId: number) {
     const commentList = await this.commentService.getListByCardId(cardId);
@@ -42,6 +46,7 @@ export class CommentController {
     };
   }
 
+  /** 내 댓글 목록 조회 */
   @Get('my')
   async getListByCommenterId(@Request() req: any) {
     const myCommentList = await this.commentService.getListByCommenterId(req.user.id);

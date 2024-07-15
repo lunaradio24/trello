@@ -19,8 +19,11 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { ListService } from 'src/list/list.service';
 import { CardService } from 'src/card/card.service';
 import { EmailService } from 'src/email/email.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Boards')
 @Controller('boards')
+@UseGuards(AccessTokenGuard)
 export class BoardController {
   constructor(
     private readonly boardService: BoardService,
@@ -29,7 +32,6 @@ export class BoardController {
   ) {}
 
   /** 보드 생성 */
-  @UseGuards(AccessTokenGuard)
   @Post('/')
   async create(@Body() createBoardDto: CreateBoardDto, @Req() req: any) {
     // userId로 adminId 지정
@@ -42,8 +44,8 @@ export class BoardController {
     };
   }
 
-  @UseGuards(AccessTokenGuard)
-  @Get('/joined')
+  /** 내가 속한 보드 목록 조회 */
+  @Get('joined')
   async findAll(@Req() req: any) {
     const userId = Number(req.user.id);
     const boards = await this.boardService.findAll(userId);
@@ -54,7 +56,7 @@ export class BoardController {
     };
   }
 
-  @UseGuards(AccessTokenGuard)
+  /** 보드 상세 조회 */
   @Get(':boardId')
   async findOne(@Param('boardId', ParseIntPipe) boardId: number, @Req() req: any) {
     const userId = Number(req.user.id);
@@ -77,7 +79,7 @@ export class BoardController {
     };
   }
 
-  @UseGuards(AccessTokenGuard)
+  /** 보드 수정 */
   @Patch(':boardId')
   async update(
     @Param('boardId', ParseIntPipe) boardId: number,
@@ -94,7 +96,7 @@ export class BoardController {
     };
   }
 
-  @UseGuards(AccessTokenGuard)
+  /** 보드 삭제 */
   @Delete(':boardId')
   async remove(@Param('boardId', ParseIntPipe) boardId: number, @Req() req: any) {
     // board 삭제 시 lists와 cards 함께 삭제 필요
@@ -106,6 +108,7 @@ export class BoardController {
     };
   }
 
+  /** 보드 초대 링크 발송 */
   @Post(':boardId/invite')
   async sendVerificationEmail(@Param('boardId') boardId: number, @Body('email') email: string) {
     const token = await this.boardService.sendVerificationEmail(boardId, email);
@@ -116,6 +119,7 @@ export class BoardController {
     };
   }
 
+  /** 보드 초대 수락 */
   @Get(':boardId/accept-invitation')
   async accpetInvitation(@Param('boardId') boardId: number, @Query('token') token: string) {
     const invitedUserId = await this.boardService.accpetInvitation(boardId, token);
