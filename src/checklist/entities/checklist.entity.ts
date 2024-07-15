@@ -21,10 +21,10 @@ export class Checklist {
   @Column({ type: 'varchar' })
   content: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: true })
   dueDate: Date;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean', default: false })
   isChecked: boolean;
 
   @CreateDateColumn()
