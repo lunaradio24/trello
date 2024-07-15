@@ -27,13 +27,16 @@ export class Board {
   @Column({ name: 'background_color', type: 'varchar', default: '#A52A2A' })
   backgroundColor: string;
 
+  @Column({ type: 'text' })
+  description: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ select: false })
   deletedAt: Date | null;
 
   @ManyToOne(() => User, (user) => user.boards)

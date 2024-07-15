@@ -12,7 +12,7 @@ import { BoardMemberType } from '../types/board-member.type';
 import { Board } from './board.entity';
 import { User } from 'src/user/entities/user.entity';
 
-@Entity('boards/members')
+@Entity('board_members')
 export class BoardMember {
   @PrimaryGeneratedColumn({ unsigned: true, type: 'int' })
   id: number;
