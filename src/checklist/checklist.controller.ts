@@ -15,7 +15,9 @@ import { ChecklistService } from './checklist.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { CreateChecklistDto } from './dto/create-checklist.dto';
 import { UpdateChecklistDto } from './dto/update-checklist.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Checklists')
 @Controller('checklist')
 @UseGuards(AccessTokenGuard)
 export class ChecklistController {
