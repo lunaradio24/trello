@@ -43,7 +43,7 @@ export class Board {
   @JoinColumn({ name: 'admin_id', referencedColumnName: 'id' })
   admin: User;
 
-  @OneToMany(() => List, (list) => list.board)
+  @OneToMany(() => List, (list) => list.board, { cascade: true })
   lists: List[];
 
   @OneToMany(() => BoardMember, (boardMember) => boardMember.board)
