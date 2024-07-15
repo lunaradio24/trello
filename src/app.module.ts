@@ -11,6 +11,9 @@ import { ListsModule } from './list/list.module';
 import { EmailModule } from './email/email.module';
 import { RedisModule } from './redis/redis.module';
 import { CardModule } from './card/card.module';
+import { BoardModule } from './board/board.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { ChecklistModule } from './checklist/checklist.module';
 
 const typeOrmModuleOptions = {
@@ -65,6 +68,11 @@ const mailerModuleOptions = {
     EmailModule,
     RedisModule,
     CardModule,
+    BoardModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..'), // 프로젝트 루트 디렉토리를 가리키도록 설정
+      serveRoot: '/', // 정적 파일의 접근 경로 설정
+    }),
   ],
   controllers: [],
   providers: [],

@@ -96,23 +96,36 @@ export class BoardService {
     return;
   }
 
-  async sendVerificationEmail(userId: number, boardId: number, email: string): Promise<string> {
-    const token = await this.emailService.sendEmailVerificationLink(email);
-    await this.emailService.storeTokenData(token, boardId, userId, email);
+  async sendVerificationEmail(boardId: number, email: string): Promise<string> {
+    const user = await this.userRepository.findOne({ where: { email, deletedAt: null } });
+    if (!user) {
+      throw new NotFoundException(`이메일 ${email}와 맞는 유저를 찾을 수 없습니다.`);
+    }
+
+    const token = await this.emailService.sendEmailVerificationLink(email, boardId, user.id);
+    await this.emailService.storeTokenData(token, boardId, user.id, email);
+    console.log(boardId, typeof boardId);
     return token;
   }
-  async verifyEmailToken(token: string): Promise<string> {
-    const tokenData = await this.emailService.verifyEmailToken(token);
+
+  async accpetInvitation(boardId: number, token: string): Promise<number> {
+    const tokenData = await this.emailService.verifyTokenData(token);
 
     if (typeof tokenData === 'object' && 'message' in tokenData) {
       throw new BadRequestException(tokenData.message); // 토큰이 유효하지 않거나 만료된 경우
     }
 
-    const { boardId, userId, email } = tokenData;
+    const { userId } = tokenData;
+    console.log(tokenData, typeof userId, typeof boardId);
 
-    const user = await this.userRepository.findOne({ where: { email } });
+    // boardId와 userId가 숫자인지 확인
+    if (isNaN(boardId) || isNaN(userId)) {
+      throw new BadRequestException('유효하지 않은 토큰 데이터입니다.');
+    }
+
+    const user = await this.userRepository.findOne({ where: { id: userId, deletedAt: null } });
     if (!user) {
-      throw new NotFoundException(`이메일 ${email}와 맞는 유저를 찾을 수 없습니다.`);
+      throw new NotFoundException(`없는 유저입니다.`);
     }
 
     const boardMember = new BoardMember();
@@ -121,6 +134,6 @@ export class BoardService {
     boardMember.memberType = BoardMemberType.MEMBER; // Assuming a default member type
     await this.boardMemberRepository.save(boardMember);
 
-    return email; // 유효한 경우 이메일 반환
+    return userId; // 유효한 경우 이메일 반환
   }
 }

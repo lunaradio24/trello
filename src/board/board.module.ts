@@ -4,6 +4,8 @@ import { BoardController } from './board.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BoardMember } from './entities/board-member.entity';
 import { Board } from './entities/board.entity';
+import { EmailModule } from 'src/email/email.module';
+import { RedisModule } from 'src/redis/redis.module';
 import { ListService } from 'src/list/list.service';
 import { List } from 'src/list/entities/list.entity';
 import { Card } from 'src/card/entities/card.entity';

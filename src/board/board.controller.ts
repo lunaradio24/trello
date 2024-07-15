@@ -87,9 +87,9 @@ export class BoardController {
     };
   }
 
-  @Post(':id/invite')
-  async sendVerificationEmail(@Param('id') id: number, @Body('boardId') boardId: number, @Body('email') email: string) {
-    const token = await this.boardService.sendVerificationEmail(id, boardId, email);
+  @Post(':boardId/invite')
+  async sendVerificationEmail(@Param('boardId') boardId: number, @Body('email') email: string) {
+    const token = await this.boardService.sendVerificationEmail(boardId, email);
     console.log(token);
     return {
       message: '초대 링크가 전송되었습니다.',
@@ -97,14 +97,12 @@ export class BoardController {
     };
   }
 
-  @Post('verify-email')
-  async verifyEmail(@Query('token') token: string) {
-    const email = await this.boardService.verifyEmailToken(token);
-    console.log(email);
+  @Get(':boardId/accept-invitation')
+  async accpetInvitation(@Param('boardId') boardId: number, @Query('token') token: string) {
+    const invitedUserId = await this.boardService.accpetInvitation(boardId, token);
     return {
-      message: '이메일 인증 성공!',
+      message: `#${boardId} 보드에 초대되었습니다.`,
+      data: { invitedUserId },
     };
-
-    // 유효한 토큰인 경우 추가 로직 수행 (예: 사용자 이메일 검증 상태 업데이트)
   }
 }
