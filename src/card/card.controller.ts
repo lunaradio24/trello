@@ -1,16 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  ParseIntPipe,
-  HttpStatus,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, HttpStatus } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -57,8 +45,36 @@ export class CardController {
     };
   }
 
+  /**카드 담당자 추가 */
+  @Post(':cardId/assignees/:assigneeId')
+  async addAssignee(
+    @Param('cardId', ParseIntPipe) cardId: number,
+    @Param('assigneeId', ParseIntPipe) assIgneeId: number,
+  ) {
+    const createAssignee = await this.cardService.addAssignee(cardId, assIgneeId);
+    return {
+      status: HttpStatus.OK,
+      message: '카드 담당자를 추가했습니다.',
+      data: createAssignee,
+    };
+  }
+
+  /**카드 담당자 삭제 */
+  @Delete(':cardId/assignees/:assigneeId')
+  async removeAssignee(
+    @Param('cardId', ParseIntPipe) cardId: number,
+    @Param('assigneeId', ParseIntPipe) assigneeId: number,
+  ) {
+    const deleteAssignee = await this.cardService.removeAssignee(cardId, assigneeId);
+    return {
+      status: HttpStatus.OK,
+      message: '카드 담당자를 삭제했습니다.',
+      data: deleteAssignee,
+    };
+  }
+
   /** 카드 이동 */
-  @Put(':cardId/move')
+  @Patch(':cardId/move')
   async moveCardById(@Param('cardId', ParseIntPipe) cardId: number, @Body() moveCardDto: MoveCardDto) {
     const moveCard = await this.cardService.moveCardById(cardId, moveCardDto);
     return {
