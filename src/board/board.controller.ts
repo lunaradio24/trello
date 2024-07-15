@@ -19,6 +19,7 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { ListService } from 'src/list/list.service';
 import { CardService } from 'src/card/card.service';
 import { ApiTags } from '@nestjs/swagger';
+import { InviteBoardDto } from './dto/invite-board.dto';
 
 @ApiTags('Boards')
 @Controller('boards')
@@ -31,7 +32,7 @@ export class BoardController {
   ) {}
 
   /** 보드 생성 */
-  @Post('/')
+  @Post()
   async create(@Body() createBoardDto: CreateBoardDto, @Req() req: any) {
     // userId로 adminId 지정
     const userId = Number(req.user.id);
@@ -39,7 +40,7 @@ export class BoardController {
     return {
       status: HttpStatus.CREATED,
       message: '보드 생성에 성공했습니다.',
-      board,
+      data: board,
     };
   }
 
@@ -51,7 +52,7 @@ export class BoardController {
     return {
       status: HttpStatus.OK,
       message: '보드 목록 조회에 성공했습니다.',
-      boards,
+      data: boards,
     };
   }
 
@@ -64,7 +65,7 @@ export class BoardController {
     return {
       status: HttpStatus.OK,
       message: '보드 상세 조회에 성공했습니다.',
-      board,
+      data: board,
     };
   }
 
@@ -81,7 +82,7 @@ export class BoardController {
     return {
       status: HttpStatus.OK,
       message: '보드 수정에 성공했습니다.',
-      updatedBoard,
+      data: updatedBoard,
     };
   }
 
@@ -90,28 +91,34 @@ export class BoardController {
   async remove(@Param('boardId', ParseIntPipe) boardId: number, @Req() req: any) {
     // board 삭제 시 lists와 cards 함께 삭제 필요
     const userId = Number(req.user.id);
-    const delededBoard = await this.boardService.delete(boardId, userId);
+    const deletedBoard = await this.boardService.delete(boardId, userId);
     return {
       status: HttpStatus.OK,
       message: '보드 삭제에 성공했습니다.',
+      data: deletedBoard,
     };
   }
 
   /** 보드 초대 링크 발송 */
   @Post(':boardId/invite')
-  async sendVerificationEmail(@Param('boardId') boardId: number, @Body('email') email: string) {
-    const token = await this.boardService.sendVerificationEmail(boardId, email);
+  async sendVerificationEmail(
+    @Param('boardId') boardId: number,
+    @Body() inviteBoardDto: InviteBoardDto,
+    @Req() req: any,
+  ) {
+    const userId = req.user.id; //JWT토큰 에서 추출
+    const token = await this.boardService.sendVerificationEmail(boardId, inviteBoardDto.email, userId);
     console.log(token);
     return {
       message: '초대 링크가 전송되었습니다.',
-      token,
+      data: token,
     };
   }
 
   /** 보드 초대 수락 */
   @Get(':boardId/accept-invitation')
-  async accpetInvitation(@Param('boardId') boardId: number, @Query('token') token: string) {
-    const invitedUserId = await this.boardService.accpetInvitation(boardId, token);
+  async acceptInvitation(@Param('boardId') boardId: number, @Query('token') token: string) {
+    const invitedUserId = await this.boardService.acceptInvitation(boardId, token);
     return {
       message: `#${boardId} 보드에 초대되었습니다.`,
       data: { invitedUserId },

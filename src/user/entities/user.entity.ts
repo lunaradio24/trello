@@ -43,18 +43,19 @@ export class User {
   @DeleteDateColumn({ select: false })
   deletedAt: Date;
 
-  @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user)
+  @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user, { cascade: ['remove', 'soft-remove'] })
   refreshToken: RefreshToken;
 
-  @OneToMany(() => Comment, (comment) => comment.commenter)
+  @OneToMany(() => Comment, (comment) => comment.commenter, { cascade: ['soft-remove'] })
   comments: Comment[];
 
-  @OneToMany(() => Board, (board) => board.admin)
+  @OneToMany(() => Board, (board) => board.admin, { cascade: ['soft-remove'] })
   boards: Board[];
 
-  @OneToMany(() => BoardMember, (member) => member.user)
+  @OneToMany(() => BoardMember, (member) => member.user, { cascade: ['soft-remove'] })
   members: BoardMember[];
 
-  @OneToMany(() => CardAssignee, (assignee) => assignee.user)
-  cardAssignees: CardAssignee[];
+
+  @OneToMany(() => CardAssignee, (assignee) => assignee.user, { cascade: ['soft-remove'] })
+  assignee: CardAssignee[];
 }

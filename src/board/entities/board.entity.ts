@@ -43,9 +43,9 @@ export class Board {
   @JoinColumn({ name: 'admin_id', referencedColumnName: 'id' })
   admin: User;
 
-  @OneToMany(() => List, (list) => list.board, { cascade: true })
+  @OneToMany(() => List, (list) => list.board, { cascade: ['soft-remove'] })
   lists: List[];
 
-  @OneToMany(() => BoardMember, (boardMember) => boardMember.board)
+  @OneToMany(() => BoardMember, (boardMember) => boardMember.board, { cascade: ['soft-remove'] })
   members: BoardMember[];
 }

@@ -122,33 +122,38 @@ export class BoardService {
     if (userId !== board.adminId) {
       throw new UnauthorizedException('삭제 권한이 없습니다.');
     }
-    const deletingBoard = await this.boardRepository.delete(boardId);
-    return;
+    const deletedBoard = await this.boardRepository.softDelete(boardId);
+    return deletedBoard;
   }
 
-  async sendVerificationEmail(boardId: number, email: string): Promise<string> {
-    const user = await this.userRepository.findOne({ where: { email, deletedAt: null } });
-    if (!user) {
-      throw new NotFoundException(`이메일 ${email}와 맞는 유저를 찾을 수 없습니다.`);
-    }
-
-    const board = await this.boardRepository.findOne({ where: { id: boardId } });
+  async sendVerificationEmail(boardId: number, email: string, userId: number): Promise<string> {
+    // 존재하는 보드인지 확인
+    const board = await this.boardRepository.findOne({ where: { id: boardId, deletedAt: null } });
     if (!board) {
       throw new NotFoundException(`보드 ID ${boardId}를 찾을 수 없습니다.`);
     }
 
     // 보드의 어드민 아이디인지 확인
-    if (user.id !== board.adminId) {
+    if (board.adminId !== userId) {
       throw new UnauthorizedException('초대 링크를 보낼 권한이 없습니다.');
     }
 
+    // 존재하는 유저인지 확인
+    const user = await this.userRepository.findOne({ where: { email, deletedAt: null } });
+    if (!user) {
+      throw new NotFoundException(`초대할 이메일 ${email}와 맞는 유저를 찾을 수 없습니다.`);
+    }
+
+    // 초대 링크 전송
     const token = await this.emailService.sendEmailVerificationLink(email, boardId, user.id);
+
+    // 링크 토큰 redis에 저장
     await this.emailService.storeTokenData(token, boardId, user.id, email);
-    console.log(boardId, typeof boardId);
+
     return token;
   }
 
-  async accpetInvitation(boardId: number, token: string): Promise<number> {
+  async acceptInvitation(boardId: number, token: string): Promise<number> {
     const tokenData = await this.emailService.verifyTokenData(token);
 
     if (typeof tokenData === 'object' && 'message' in tokenData) {
@@ -156,22 +161,25 @@ export class BoardService {
     }
 
     const { userId } = tokenData;
-    console.log(tokenData, typeof userId, typeof boardId);
 
     // boardId와 userId가 숫자인지 확인
     if (isNaN(boardId) || isNaN(userId)) {
       throw new BadRequestException('유효하지 않은 토큰 데이터입니다.');
     }
 
+    // 존재하는 유저인지 확인
     const user = await this.userRepository.findOne({ where: { id: userId, deletedAt: null } });
     if (!user) {
-      throw new NotFoundException(`없는 유저입니다.`);
+      throw new NotFoundException(`존재하지 않는 유저입니다.`);
     }
 
+    // board_members 테이블에 저장할 레코드 포맷팅
     const boardMember = new BoardMember();
     boardMember.boardId = boardId; // Assuming you have a specific board ID
     boardMember.memberId = user.id;
     boardMember.memberType = BoardMemberType.MEMBER; // Assuming a default member type
+
+    // board_members 테이블에 저장
     await this.boardMemberRepository.save(boardMember);
 
     return userId; // 유효한 경우 이메일 반환
