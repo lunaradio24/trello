@@ -59,13 +59,21 @@ export class BoardService {
   }
 
   async findAll(userId: number) {
-    const joinedBoardMembers = await this.boardMemberRepository.find({
-      where: {
-        memberId: userId,
-      },
-      relations: ['board'],
-    });
-    const joinedBoards = joinedBoardMembers.map((boardMember) => boardMember.board);
+    const joinedBoards = await this.boardRepository
+      .createQueryBuilder('board')
+      .leftJoin('board.members', 'boardMember')
+      .where('boardMember.memberId = :userId', { userId })
+      .andWhere('board.deletedAt IS NULL')
+      .select([
+        'board.id',
+        'board.adminId',
+        'board.title',
+        'board.backgroundColor',
+        'board.description',
+        'board.createdAt',
+        'board.updatedAt',
+      ])
+      .getMany();
     return joinedBoards;
   }
 
