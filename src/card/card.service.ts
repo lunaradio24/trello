@@ -159,4 +159,15 @@ export class CardService {
 
     await this.cardRepository.softDelete({ id });
   }
+  // board 상세조회 시 cards 가져오기
+  async findAllBoards(listId: number) {
+    const cards = await this.cardRepository.find({
+      where: {
+        list: {
+          id: listId,
+        },
+      },
+    });
+    return cards;
+  }
 }
