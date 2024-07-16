@@ -16,10 +16,11 @@ import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { MoveListDto } from './dto/move-list.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Lists')
 @Controller('lists')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class ListController {
   constructor(private readonly listService: ListService) {}

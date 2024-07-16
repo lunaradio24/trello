@@ -1,12 +1,10 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
   HttpStatus,
   Param,
   ParseIntPipe,
-  Patch,
   Post,
   Request,
   UploadedFile,
@@ -17,11 +15,11 @@ import { AttachmentService } from './attachment.service';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from '../s3/s3.service';
-import { ApiTags } from '@nestjs/swagger';
-import { CreateAttachmentDto } from './dto/create-attachment.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Attachment')
 @Controller('cards/:cardId/attachment')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class AttachmentController {
   constructor(
