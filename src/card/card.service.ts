@@ -14,6 +14,7 @@ import {
   POSITION_MULTIPLIER,
   POSITION_RECALCULATION_THRESHOLD,
 } from './constants/card.constant';
+import { BoardMember } from 'src/board/entities/board-member.entity';
 
 //레포지토리 가져오기
 @Injectable()
@@ -27,6 +28,8 @@ export class CardService {
     private listRepository: Repository<List>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(BoardMember)
+    private boardMemberRepository: Repository<BoardMember>,
   ) {}
 
   //카드 생성 API
@@ -48,7 +51,7 @@ export class CardService {
     // 포지션 값 계산
     const lastCard = await this.cardRepository.findOne({
       where: { list: { id: listId }, deletedAt: null },
-      order: { position: 'ASC' },
+      order: { position: 'DESC' },
     });
     const position = lastCard ? lastCard.position * POSITION_MULTIPLIER : INITIAL_POSITION;
 
@@ -89,7 +92,7 @@ export class CardService {
 
   // 카드 담당자 추가 API
   async addAssignee(cardId: number, assigneeId: number): Promise<{ cardAssignee: CardAssignee; user: User }> {
-    const card = await this.cardRepository.findOne({ where: { id: cardId } });
+    const card = await this.cardRepository.findOne({ where: { id: cardId }, relations: ['list'] });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
@@ -97,6 +100,16 @@ export class CardService {
     const user = await this.userRepository.findOne({ where: { id: assigneeId } });
     if (!user) {
       throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
+    }
+
+    const list = card.list;
+
+    // 보드 멤버 검증
+    const isMember = await this.boardMemberRepository.findOne({
+      where: { boardId: list.boardId, memberId: assigneeId },
+    });
+    if (!isMember) {
+      throw new BadRequestException('해당 사용자는 보드 멤버가 아닙니다.');
     }
 
     const existingAssignee = await this.cardAssigneeRepository.findOne({ where: { cardId, assigneeId } });
@@ -137,6 +150,11 @@ export class CardService {
     const targetList = await this.listRepository.findOne({ where: { id: targetListId } });
     if (!targetList) {
       throw new NotFoundException('옮길 리스트를 찾을 수 없습니다.');
+    }
+
+    // 타겟 리스트가 다른 보드에 속해 있는지 확인
+    if (card.list.boardId !== targetList.boardId) {
+      throw new BadRequestException('다른 보드에 있는 리스트로 카드를 옮길 수 없습니다.');
     }
 
     //오름차순으로 가져와 포지션 계산
