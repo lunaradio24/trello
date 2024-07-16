@@ -117,6 +117,7 @@ export class ChecklistService {
     await this.checklistRepository.softDelete({ id: checklistId });
     const { deletedAt } = await this.checklistRepository.findOne({
       where: { id: checklistId },
+      withDeleted: true,
       select: ['id', 'deletedAt'],
     });
 
