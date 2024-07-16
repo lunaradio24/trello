@@ -53,7 +53,7 @@ export class EmailService {
     await this.transporter.sendMail(linkMailOptions);
 
     // 토큰을 Redis에 저장 (TTL을 9시간으로 설정)
-    await this.redis.set(`email_verification_token_${token}`, email, { ex: 9 * 60 * 60 });
+    await this.storeTokenData(token, boardId, userId, email);
 
     return token; // 생성된 토큰 반환
   }
@@ -72,7 +72,6 @@ export class EmailService {
       return { message: '토큰이 유효하지 않거나 만료되었습니다.' }; // 토큰이 유효하지 않거나 만료된 경우
     }
 
-    await this.redis.del(`email_verification_token_${token}`);
     const parsedData = JSON.parse(data);
 
     // 데이터가 유효한지 확인
@@ -80,6 +79,7 @@ export class EmailService {
       return { message: '토큰 데이터가 올바르지 않습니다.' };
     }
 
+    await this.redis.del(`email_verification_token_${token}`);
     return parsedData; // 유효한 경우 데이터 반환
   }
 }
