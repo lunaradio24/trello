@@ -71,6 +71,52 @@ export class AttachmentController {
       message: '첨부파일 삭제에 성공했습니다.',
     };
   }
+  // // 첨부파일 다운로드
+  // @Get(':attachmentId/download')
+  // async downloadFile(@Param('attachmentId', ParseIntPipe) attachmentId: number, @Res() res: Response) {
+  //   const attachment = await this.attachmentService.getAttachmentById(attachmentId);
+  //
+  //   if (!attachment) {
+  //     return res.status(HttpStatus.NOT_FOUND).json({
+  //       statusCode: HttpStatus.NOT_FOUND,
+  //       message: '첨부파일을 찾을 수 없습니다.',
+  //     });
+  //   }
+  //
+  //   const fileBuffer = await this.s3Service.downloadFileFromS3(attachment.fileUrl);
+  //   const fileName = attachment.fileUrl.split('/').pop();
+  //   const fileExt = fileName.split('.').pop();
+  //
+  //   // Content-Type과 Content-Disposition 헤더 설정
+  //   res.setHeader('Content-Type', `image/${fileExt}`);
+  //   res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+  //
+  //   // 파일 버퍼를 응답으로 전송
+  //   res.send(fileBuffer);
+  // }
+  //
+  // // 첨부파일 다운로드
+  // @Get(':attachmentId/download')
+  // async downloadFile(@Param('attachmentId', ParseIntPipe) attachmentId: number, @Res() res: Response) {
+  //   const attachment = await this.attachmentService.getAttachmentById(attachmentId);
+  //
+  //   if (!attachment) {
+  //     return res.status(HttpStatus.NOT_FOUND).json({
+  //       statusCode: HttpStatus.NOT_FOUND,
+  //       message: '첨부파일을 찾을 수 없습니다.',
+  //     });
+  //   }
+  //
+  //   const { Body, ContentType, FileName } = await this.s3Service.downloadFileFromS3(attachment.fileUrl);
+  //
+  //   // 다운로드를 위해 Content-Disposition 헤더 설정
+  //   res.setHeader('Content-Disposition', `attachment; filename=${FileName}`);
+  //   res.setHeader('Content-Type', ContentType);
+  //
+  //   // 파일 스트림을 응답으로 파이프
+  //   Body.pipe(res);
+  // }
+
   // 첨부파일 다운로드
   @Get(':attachmentId/download')
   async downloadFile(@Param('attachmentId', ParseIntPipe) attachmentId: number, @Res() res: Response) {
@@ -83,15 +129,13 @@ export class AttachmentController {
       });
     }
 
-    const fileBuffer = await this.s3Service.downloadFileFromS3(attachment.fileUrl);
-    const fileName = attachment.fileUrl.split('/').pop();
-    const fileExt = fileName.split('.').pop();
+    const { Body, ContentType, FileName } = await this.s3Service.downloadFileFromS3(attachment.fileUrl);
 
-    // Content-Type과 Content-Disposition 헤더 설정
-    res.setHeader('Content-Type', `image/${fileExt}`);
-    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+    // 다운로드를 위해 Content-Disposition 헤더 설정
+    res.setHeader('Content-Disposition', `attachment; filename="${FileName}"`);
+    res.setHeader('Content-Type', ContentType);
 
-    // 파일 버퍼를 응답으로 전송
-    res.send(fileBuffer);
+    // 파일 스트림을 응답으로 파이프
+    Body.pipe(res);
   }
 }

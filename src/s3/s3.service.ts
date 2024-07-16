@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, GetObjectCommand, DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  PutObjectCommand,
+  HeadObjectCommand,
+  HeadObjectCommandOutput,
+} from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 
 @Injectable()
@@ -59,8 +66,72 @@ export class S3Service {
     await this.s3Client.send(command);
   }
 
-  async downloadFileFromS3(fileUrl: string): Promise<Buffer> {
+  //
+  // async downloadFileFromS3(fileUrl: string): Promise<Buffer> {
+  //   const fileName = fileUrl.split('/').pop();
+  //
+  //   const command = new GetObjectCommand({
+  //     Bucket: this.awsS3Bucket,
+  //     Key: fileName,
+  //   });
+  //
+  //   const { Body } = await this.s3Client.send(command);
+  //
+  //   if (Body instanceof Readable) {
+  //     const chunks: Buffer[] = [];
+  //     for await (const chunk of Body) {
+  //       chunks.push(chunk);
+  //     }
+  //     return Buffer.concat(chunks);
+  //   } else {
+  //     throw new Error('Unexpected Body type');
+  //   }
+  // }
+  //
+  // // 파일을 S3에서 다운로드하는 메서드 추가
+  // async downloadFileFromS3(fileUrl: string): Promise<{ Body: Readable; ContentType: string; FileName: string }> {
+  //   const fileName = fileUrl.split('/').pop();
+  //
+  //   // 객체의 메타데이터를 가져오기 위해 HeadObjectCommand를 사용합니다.
+  //   const headCommand = new HeadObjectCommand({
+  //     Bucket: this.awsS3Bucket,
+  //     Key: fileName,
+  //   });
+  //   const headResponse = await this.s3Client.send(headCommand);
+  //
+  //   const command = new GetObjectCommand({
+  //     Bucket: this.awsS3Bucket,
+  //     Key: fileName,
+  //   });
+  //
+  //   const { Body } = await this.s3Client.send(command);
+  //
+  //   if (Body instanceof Readable) {
+  //     return { Body, ContentType: headResponse.ContentType || 'application/octet-stream', FileName: fileName! };
+  //   } else {
+  //     // ReadableStream을 Readable로 변환하는 방법
+  //     const readable = new Readable();
+  //     readable._read = () => {}; // _read는 no-op으로 설정
+  //     (Body as any).on('data', (chunk: any) => readable.push(chunk));
+  //     (Body as any).on('end', () => readable.push(null));
+  //
+  //     return {
+  //       Body: readable,
+  //       ContentType: headResponse.ContentType || 'application/octet-stream',
+  //       FileName: fileName!,
+  //     };
+  //   }
+  // }
+
+  async downloadFileFromS3(fileUrl: string): Promise<{ Body: Readable; ContentType: string; FileName: string }> {
     const fileName = fileUrl.split('/').pop();
+
+    // 객체의 메타데이터를 가져오기 위해 HeadObjectCommand를 사용합니다.
+    const headCommand = new HeadObjectCommand({
+      Bucket: this.awsS3Bucket,
+      Key: fileName,
+    });
+    const headResponse = await this.s3Client.send(headCommand);
 
     const command = new GetObjectCommand({
       Bucket: this.awsS3Bucket,
@@ -70,13 +141,23 @@ export class S3Service {
     const { Body } = await this.s3Client.send(command);
 
     if (Body instanceof Readable) {
-      const chunks: Buffer[] = [];
-      for await (const chunk of Body) {
-        chunks.push(chunk);
-      }
-      return Buffer.concat(chunks);
+      return {
+        Body,
+        ContentType: headResponse.ContentType || 'application/octet-stream',
+        FileName: fileName!,
+      };
     } else {
-      throw new Error('Unexpected Body type');
+      // ReadableStream을 Readable로 변환하는 방법
+      const readable = new Readable();
+      readable._read = () => {}; // _read는 no-op으로 설정
+      (Body as any).on('data', (chunk: any) => readable.push(chunk));
+      (Body as any).on('end', () => readable.push(null));
+
+      return {
+        Body: readable,
+        ContentType: headResponse.ContentType || 'application/octet-stream',
+        FileName: fileName!,
+      };
     }
   }
 }
