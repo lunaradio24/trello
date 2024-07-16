@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -159,11 +165,14 @@ export class BoardService {
       throw new NotFoundException(`초대할 이메일 ${email}와 맞는 유저를 찾을 수 없습니다.`);
     }
 
+    // 이미 등록된 멤버인지 확인
+    const member = await this.boardMemberRepository.findOne({ where: { memberId: user.id } });
+    if (member) {
+      throw new ConflictException('이미 멤버로 등록된 유저입니다.');
+    }
+
     // 초대 링크 전송
     const token = await this.emailService.sendEmailVerificationLink(email, boardId, user.id);
-
-    // 링크 토큰 redis에 저장
-    await this.emailService.storeTokenData(token, boardId, user.id, email);
 
     return token;
   }

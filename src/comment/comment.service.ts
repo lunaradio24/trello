@@ -137,6 +137,7 @@ export class CommentService {
     // 삭제 시간 반환
     const { deletedAt } = await this.commentRepository.findOne({
       where: { id: commentId },
+      withDeleted: true,
       select: ['id', 'deletedAt'],
     });
 
