@@ -1,12 +1,10 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
   HttpStatus,
   Param,
   ParseIntPipe,
-  Patch,
   Post,
   Request,
   Res,
@@ -18,12 +16,13 @@ import { AttachmentService } from './attachment.service';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from '../s3/s3.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Readable } from 'stream';
 
-@ApiTags('Attachment')
-@Controller('cards/:cardId/attachment')
+@ApiTags('Attachments')
+@Controller('cards/:cardId/attachments')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class AttachmentController {
   constructor(
@@ -60,6 +59,7 @@ export class AttachmentController {
     };
   }
 
+  // 첨부파일 삭제
   @Delete(':attachmentId')
   async deleteFile(
     @Param('cardId', ParseIntPipe) cardId: number,

@@ -15,11 +15,12 @@ import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from '../s3/s3.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @ApiTags('Users')
 @Controller('users/me')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class UserController {
   constructor(

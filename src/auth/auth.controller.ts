@@ -3,7 +3,7 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { SendEmailDto } from './dto/send-email.dto';
 
@@ -37,6 +37,7 @@ export class AuthController {
 
   /** 로그아웃 */
   @Post('sign-out')
+  @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
   async signOut(@Request() req: any) {
     await this.authService.signOut(req.user.id);
@@ -47,6 +48,7 @@ export class AuthController {
 
   /** 토큰 재발급 */
   @Post('renew-tokens')
+  @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
   async renewTokens(@Request() req: any) {
     const tokens = await this.authService.renewTokens(req.user.id, req.user.email);

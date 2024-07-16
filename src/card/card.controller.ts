@@ -17,10 +17,11 @@ import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { MoveCardDto } from './dto/move-card.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Cards')
 @Controller('cards')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class CardController {
   constructor(private readonly cardService: CardService) {}
