@@ -5,7 +5,7 @@ import { List } from './entities/list.entity';
 import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { MoveListDto } from './dto/move-list.dto';
-import { Board } from 'src/board/entities/board.entity';
+import { Board } from '../board/entities/board.entity';
 import {
   MAX_NUM_LISTS_IN_BOARD,
   INITIAL_POSITION_FACTOR,

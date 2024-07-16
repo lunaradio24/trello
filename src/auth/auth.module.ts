@@ -18,19 +18,12 @@ import { LocalStrategy } from './strategies/local.strategy';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, RefreshToken]),
-    PassportModule.register({ defaultStrategy: 'access-token', session: false }),
+    PassportModule.register({ session: false }),
     ConfigModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('ACCESS_TOKEN_SECRET_KEY'),
         signOptions: { expiresIn: configService.get('ACCESS_TOKEN_EXPIRED_IN') },
-      }),
-      inject: [ConfigService],
-    }),
-    JwtModule.registerAsync({
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get('REFRESH_TOKEN_SECRET_KEY'),
-        signOptions: { expiresIn: configService.get('REFRESH_TOKEN_EXPIRED_IN') },
       }),
       inject: [ConfigService],
     }),
