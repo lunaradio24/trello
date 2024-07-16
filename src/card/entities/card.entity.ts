@@ -1,4 +1,4 @@
-import { List } from 'src/list/entities/list.entity';
+import { List } from '../../list/entities/list.entity';
 import {
   Column,
   CreateDateColumn,
@@ -11,9 +11,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CardAssignee } from './card_assignee.entity';
-import { Comment } from 'src/comment/entities/comment.entity';
-import { Attachment } from 'src/attachment/entities/attachment.entity';
-import { Checklist } from 'src/checklist/entities/checklist.entity';
+import { Comment } from '../../comment/entities/comment.entity';
+import { Attachment } from '../../attachment/entities/attachment.entity';
+import { Checklist } from '../../checklist/entities/checklist.entity';
 
 @Entity({ name: 'cards' })
 export class Card {

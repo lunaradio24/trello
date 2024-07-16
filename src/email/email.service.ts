@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createTransporter } from 'src/utils/email.util';
-import { createRedisClient } from 'src/utils/redis.util';
+import { createTransporter } from '../utils/email.util';
+import { createRedisClient } from '../utils/redis.util';
 import { Redis } from '@upstash/redis';
 import { sign } from 'jsonwebtoken';
 

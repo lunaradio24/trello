@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, Validate } from 'class-validator';
-import { IsPasswordMatchingConstraint } from 'src/user/decorators/password-match.decorator';
+import { IsPasswordMatchingConstraint } from '../../user/decorators/password-match.decorator';
 
 export class UpdatePasswordDto {
   /**

@@ -1,6 +1,6 @@
 // import { Card } from 'src/card/entities/card.entity';
-import { Card } from 'src/card/entities/card.entity';
-import { User } from 'src/user/entities/user.entity';
+import { Card } from '../../card/entities/card.entity';
+import { User } from '../../user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,

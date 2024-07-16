@@ -14,7 +14,7 @@ import {
 import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { MoveCardDto } from './dto/move-card.dto';
 import { ApiTags } from '@nestjs/swagger';
 

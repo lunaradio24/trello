@@ -4,8 +4,8 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './entities/board.entity';
 import { DataSource, Repository } from 'typeorm';
-import { EmailService } from 'src/email/email.service';
-import { User } from 'src/user/entities/user.entity';
+import { EmailService } from '../email/email.service';
+import { User } from '../user/entities/user.entity';
 import { BoardMember } from './entities/board-member.entity';
 import { BoardMemberType } from './types/board-member.type';
 

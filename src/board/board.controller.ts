@@ -15,9 +15,9 @@ import {
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
-import { ListService } from 'src/list/list.service';
-import { CardService } from 'src/card/card.service';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { ListService } from '../list/list.service';
+import { CardService } from '../card/card.service';
 import { ApiTags } from '@nestjs/swagger';
 import { InviteBoardDto } from './dto/invite-board.dto';
 
