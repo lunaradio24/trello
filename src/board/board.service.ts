@@ -166,7 +166,7 @@ export class BoardService {
     }
 
     // 이미 등록된 멤버인지 확인
-    const member = await this.boardMemberRepository.findOne({ where: { memberId: user.id } });
+    const member = await this.boardMemberRepository.findOne({ where: { boardId, memberId: user.id } });
     if (member) {
       throw new ConflictException('이미 멤버로 등록된 유저입니다.');
     }
