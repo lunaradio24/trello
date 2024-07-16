@@ -42,7 +42,7 @@ export class CardService {
     // 포지션 값 계산
     const lastCard = await this.cardRepository.findOne({
       where: { list: { id: listId } },
-      order: { position: 'DESC' },
+      order: { position: 'ASC' },
     });
     const position = lastCard ? lastCard.position * 2 : 1024;
 
@@ -61,7 +61,7 @@ export class CardService {
     const card = await this.cardRepository.findOne({
       where: { id },
       relations: ['checklists', 'attachments', 'cardAssignees', 'comments'],
-      order: { position: 'DESC' },
+      order: { position: 'ASC' },
     });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
@@ -135,17 +135,20 @@ export class CardService {
       //옮길 리스트에 다른 카드가 없다면 새 카드의 포지션 값을 1024로 설정
       newPosition = 1024;
     } else {
-      if (targetIndex < 0 || targetIndex > targetListCards.length) {
+      // targetIndex 값을 1부터 시작하도록 조정
+      const adjustedIndex = targetIndex - 1;
+
+      if (adjustedIndex < 0 || adjustedIndex > targetListCards.length) {
         throw new BadRequestException('유효한 인덱스를 입력해주세요.');
       }
 
-      if (targetIndex === 0) {
+      if (adjustedIndex === 0) {
         newPosition = targetListCards[0].position / 2;
-      } else if (targetIndex === targetListCards.length) {
+      } else if (adjustedIndex === targetListCards.length) {
         newPosition = targetListCards[targetListCards.length - 1].position * 2;
       } else {
-        const prevCard = targetListCards[targetIndex - 1];
-        const nextCard = targetListCards[targetIndex];
+        const prevCard = targetListCards[adjustedIndex - 1];
+        const nextCard = targetListCards[adjustedIndex];
         newPosition = (prevCard.position + nextCard.position) / 2;
       }
     }

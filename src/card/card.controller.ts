@@ -27,6 +27,7 @@ export class CardController {
 
   /** 카드 생성 */
   @Post()
+  @UsePipes(new ValidationPipe({ transform: true }))
   async createCard(@Body() createCardDto: CreateCardDto) {
     const card = await this.cardService.createCard(createCardDto);
     return {
@@ -85,16 +86,16 @@ export class CardController {
     @Param('cardId', ParseIntPipe) cardId: number,
     @Param('assigneeId', ParseIntPipe) assigneeId: number,
   ) {
-    const deleteAssignee = await this.cardService.removeAssignee(cardId, assigneeId);
+    await this.cardService.removeAssignee(cardId, assigneeId);
     return {
       status: HttpStatus.OK,
       message: '카드 담당자를 삭제했습니다.',
-      data: deleteAssignee,
     };
   }
 
   /** 카드 이동 */
   @Patch(':cardId/move')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async moveCardById(@Param('cardId', ParseIntPipe) cardId: number, @Body() moveCardDto: MoveCardDto) {
     const moveCard = await this.cardService.moveCardById(cardId, moveCardDto);
     return {
