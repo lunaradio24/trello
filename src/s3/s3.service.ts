@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand, DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { Readable } from 'stream';
 
 @Injectable()
 export class S3Service {
@@ -56,5 +57,26 @@ export class S3Service {
     });
 
     await this.s3Client.send(command);
+  }
+
+  async downloadFileFromS3(fileUrl: string): Promise<Buffer> {
+    const fileName = fileUrl.split('/').pop();
+
+    const command = new GetObjectCommand({
+      Bucket: this.awsS3Bucket,
+      Key: fileName,
+    });
+
+    const { Body } = await this.s3Client.send(command);
+
+    if (Body instanceof Readable) {
+      const chunks: Buffer[] = [];
+      for await (const chunk of Body) {
+        chunks.push(chunk);
+      }
+      return Buffer.concat(chunks);
+    } else {
+      throw new Error('Unexpected Body type');
+    }
   }
 }
