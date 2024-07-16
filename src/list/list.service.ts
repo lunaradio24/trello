@@ -141,31 +141,42 @@ export class ListService {
 
     const boardId = list.board.id;
 
-    const boardLists = await this.listsRepository.find({
+    let boardLists = await this.listsRepository.find({
       where: { boardId },
       order: { position: 'ASC' },
     });
 
+    // 현재 이동하려는 리스트의 인덱스를 찾습니다.
+    const currentIndex = boardLists.findIndex((l) => l.id === listId);
+
+    // 필터를 사용해서 listId가 같은, 즉 현재 이동할 리스트를 로직에서 제외하고 계산
+    boardLists = boardLists.filter((l) => l.id !== listId);
+
     const realIndex = targetIndex - 1;
 
-    if (realIndex < 0 || realIndex >= boardLists.length) {
+    if (realIndex < 0 || realIndex > boardLists.length) {
       throw new BadRequestException('유효한 인덱스를 입력해주세요.');
     }
 
-    if (boardLists.findIndex((l) => l.id === listId) === realIndex) {
-      throw new BadRequestException('같은 보드의 같은 위치로 이동할 수 없습니다.');
+    // 같은 위치로 이동할 수 없도록 예외 처리
+    if (currentIndex === realIndex) {
+      throw new BadRequestException('같은 위치로는 이동할 수 없습니다.');
     }
 
     let newPosition: number;
 
-    if (realIndex === 0) {
-      newPosition = boardLists[0].position / POSITION_MULTIPLIER;
-    } else if (realIndex === boardLists.length - 1) {
-      newPosition = boardLists[boardLists.length - 1].position * POSITION_MULTIPLIER;
+    if (boardLists.length === 0) {
+      newPosition = INITIAL_POSITION_FACTOR;
     } else {
-      const prevList = boardLists[realIndex - 1];
-      const nextList = boardLists[realIndex];
-      newPosition = (prevList.position + nextList.position) / POSITION_MULTIPLIER;
+      if (realIndex === 0) {
+        newPosition = boardLists[0].position / POSITION_MULTIPLIER;
+      } else if (realIndex === boardLists.length) {
+        newPosition = boardLists[boardLists.length - 1].position * POSITION_MULTIPLIER;
+      } else {
+        const prevList = boardLists[realIndex - 1];
+        const nextList = boardLists[realIndex];
+        newPosition = (prevList.position + nextList.position) / POSITION_MULTIPLIER;
+      }
     }
 
     if (newPosition % 1 !== 0 && newPosition % 1 < POSITION_RECALCULATION_THRESHOLD) {

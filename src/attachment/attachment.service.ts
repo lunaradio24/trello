@@ -49,4 +49,12 @@ export class AttachmentService {
     }
     return attachments;
   }
+
+  async getAttachmentById(attachmentId: number): Promise<Attachment> {
+    const attachment = await this.attachmentRepository.findOne({ where: { id: attachmentId } });
+    if (!attachment) {
+      throw new NotFoundException('첨부파일을 찾을 수 없습니다.');
+    }
+    return attachment;
+  }
 }
