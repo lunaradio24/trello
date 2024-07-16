@@ -19,12 +19,14 @@ export class CardService {
     private cardAssigneeRepository: Repository<CardAssignee>,
     @InjectRepository(List)
     private listRepository: Repository<List>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   //카드 생성 API
   async createCard(createCardDto: CreateCardDto): Promise<Card> {
     const { title, listId } = createCardDto;
-    const list = await this.cardRepository.findOne({ where: { id: listId } });
+    const list = await this.listRepository.findOne({ where: { id: listId } });
 
     //리스트 찾기
     if (!list) {
@@ -67,7 +69,7 @@ export class CardService {
     return card;
   }
 
-  // 카드 업데이트 API
+  // 카드 수정 API
   async updateCardById(id: number, updateCardDto: UpdateCardDto): Promise<Card> {
     const card = await this.cardRepository.update(id, updateCardDto);
     // 카드 존재 확인
@@ -75,30 +77,41 @@ export class CardService {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
+    await this.cardRepository.update(id, updateCardDto);
     return this.getCardById(id);
   }
 
   // 카드 담당자 추가 API
-  // TODO: 매소드 이름 변경(update -> add or create), 배열이 아니라 한 명씩 추가
-  // TODO: create-card.dto, update-card-dto도 그에 맞춰 변경
-  async updateAssignees(cardId: number, assigneeId: number[]): Promise<void> {
-    // 기존 Assignee 삭제
-    await this.cardAssigneeRepository.delete({ cardId });
+  async addAssignee(cardId: number, assigneeId: number): Promise<{ cardAssignee: CardAssignee; user: User }> {
+    const card = await this.cardRepository.findOne({ where: { id: cardId } });
+    if (!card) {
+      throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
+    }
 
-    // 새로운 Assignee 추가
-    const cardAssignees = assigneeId.map((assigneeId) => ({
-      cardId,
-      assigneeId,
-    }));
-    await this.cardAssigneeRepository.save(cardAssignees);
+    const user = await this.userRepository.findOne({ where: { id: assigneeId } });
+    if (!user) {
+      throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
+    }
+
+    const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
+    await this.cardAssigneeRepository.save(cardAssignee);
+
+    return { cardAssignee, user };
   }
 
   // 카드 담당자 삭제 API
-  // TODO: 한 명씩 삭제
+  async removeAssignee(cardId: number, assigneeId: number): Promise<void> {
+    const card = await this.cardRepository.findOne({ where: { id: cardId } });
+    if (!card) {
+      throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
+    }
+
+    await this.cardAssigneeRepository.delete({ cardId, assigneeId });
+  }
 
   //카드 이동 API
   async moveCardById(cardId: number, moveCardDto: MoveCardDto): Promise<Card> {
-    const { listId: targetListId, targetCardId, position } = moveCardDto;
+    const { listId: targetListId, targetIndex } = moveCardDto;
 
     const card = await this.cardRepository.findOne({ where: { id: cardId } });
     if (!card) {
@@ -112,7 +125,7 @@ export class CardService {
 
     //오름차순으로 가져와 포지션 계산
     const targetListCards = await this.cardRepository.find({
-      where: { listId: targetListId },
+      where: { list: { id: targetListId } },
       order: { position: 'ASC' },
     });
 
@@ -122,34 +135,18 @@ export class CardService {
       //옮길 리스트에 다른 카드가 없다면 새 카드의 포지션 값을 1024로 설정
       newPosition = 1024;
     } else {
-      const targetCardIndex = targetListCards.findIndex((c) => c.id === targetCardId);
-
-      if (targetCardIndex < 0) {
-        throw new BadRequestException('카드가 이동할 곳을 명확히 입력해주세요.');
+      if (targetIndex < 0 || targetIndex > targetListCards.length) {
+        throw new BadRequestException('유효한 인덱스를 입력해주세요.');
       }
 
-      const targetCard = targetListCards[targetCardIndex];
-
-      //카드가 이동할 곳이 타켓 카드의 위일 때
-      if (position === 'before') {
-        const prevCard = targetListCards[targetCardIndex - 1];
-
-        if (prevCard) {
-          newPosition = (prevCard.position + targetCard.position) / 2;
-        } else {
-          newPosition = targetCard.position / 2;
-        }
-        //카드가 이동할 곳이 타켓 카드의 아래일 때
-      } else if (position === 'after') {
-        const nextCard = targetListCards[targetCardIndex + 1];
-
-        if (nextCard) {
-          newPosition = (targetCard.position + nextCard.position) / 2;
-        } else {
-          newPosition = targetCard.position * 2;
-        }
+      if (targetIndex === 0) {
+        newPosition = targetListCards[0].position / 2;
+      } else if (targetIndex === targetListCards.length) {
+        newPosition = targetListCards[targetListCards.length - 1].position * 2;
       } else {
-        throw new Error('포지션 값이 올바르지 않습니다.');
+        const prevCard = targetListCards[targetIndex - 1];
+        const nextCard = targetListCards[targetIndex];
+        newPosition = (prevCard.position + nextCard.position) / 2;
       }
     }
 
@@ -173,6 +170,7 @@ export class CardService {
     card.position = newPosition;
     return this.cardRepository.save(card);
   }
+
   //카드 소프트 딜리트
   async removeCardById(id: number): Promise<void> {
     const card = await this.cardRepository.findOneBy({ id });
@@ -182,6 +180,7 @@ export class CardService {
 
     await this.cardRepository.softDelete({ id });
   }
+
   // board 상세조회 시 cards 가져오기
   async findAllBoards(listId: number) {
     const cards = await this.cardRepository.find({

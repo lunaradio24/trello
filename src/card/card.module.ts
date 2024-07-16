@@ -8,7 +8,7 @@ import { List } from '../list/entities/list.entity';
 import { User } from '../user/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Card, CardAssignee, List])],
+  imports: [TypeOrmModule.forFeature([Card, CardAssignee, List, User])],
   controllers: [CardController],
   providers: [CardService],
 })

@@ -37,6 +37,15 @@ export class UserService {
     return isMatched;
   }
 
+  async updateUserImage(userId: number, imageUrl: string): Promise<void> {
+    const user = await this.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    user.image = imageUrl;
+    await this.userRepository.save(user);
+  }
+
   async updateMe(userId: number, updateMeDto: UpdateMeDto): Promise<Omit<User, 'password'>> {
     const { password, ...restUpdateMeDto } = updateMeDto;
 

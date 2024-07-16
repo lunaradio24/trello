@@ -15,6 +15,7 @@ import { BoardModule } from './board/board.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ChecklistModule } from './checklist/checklist.module';
+import { S3Module } from './s3/s3.module';
 
 const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
@@ -73,6 +74,7 @@ const mailerModuleOptions = {
       rootPath: join(__dirname, '..'), // 프로젝트 루트 디렉토리를 가리키도록 설정
       serveRoot: '/', // 정적 파일의 접근 경로 설정
     }),
+    S3Module,
   ],
   controllers: [],
   providers: [],

@@ -56,5 +56,5 @@ export class User {
   members: BoardMember[];
 
   @OneToMany(() => CardAssignee, (assignee) => assignee.user, { cascade: ['soft-remove'] })
-  assignee: CardAssignee[];
+  cardAssignees: CardAssignee[];
 }
