@@ -8,11 +8,11 @@ import {
   DeleteDateColumn,
   OneToMany,
 } from 'typeorm';
-import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
+import { RefreshToken } from '../../auth/entities/refresh-token.entity';
 import { Comment } from '../../comment/entities/comment.entity';
-import { Board } from 'src/board/entities/board.entity';
-import { BoardMember } from 'src/board/entities/board-member.entity';
-import { CardAssignee } from 'src/card/entities/card_assignee.entity';
+import { Board } from '../../board/entities/board.entity';
+import { BoardMember } from '../../board/entities/board-member.entity';
+import { CardAssignee } from '../../card/entities/card_assignee.entity';
 
 @Entity({ name: 'users' })
 export class User {

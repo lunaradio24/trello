@@ -1,0 +1,2 @@
+export const MAX_NUM_LISTS_IN_BOARD = 10;
+export const INITIAL_POSITION_FACTOR = 1024;

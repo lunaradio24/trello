@@ -6,8 +6,8 @@ import { Card } from './entities/card.entity';
 import { Repository } from 'typeorm';
 import { CardAssignee } from './entities/card_assignee.entity';
 import { MoveCardDto } from './dto/move-card.dto';
-import { List } from 'src/list/entities/list.entity';
-import { User } from 'src/user/entities/user.entity';
+import { List } from '../list/entities/list.entity';
+import { User } from '../user/entities/user.entity';
 import {
   INITIAL_POSITION,
   MAX_CARD_COUNT,
