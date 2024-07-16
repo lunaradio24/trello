@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class S3Service {
@@ -45,5 +45,16 @@ export class S3Service {
 
     // 업로드된 이미지의 URL을 반환합니다.
     return fileUrl;
+  }
+
+  async deleteFileFromS3(fileUrl: string) {
+    const fileName = fileUrl.split('/').pop();
+
+    const command = new DeleteObjectCommand({
+      Bucket: this.awsS3Bucket,
+      Key: fileName,
+    });
+
+    await this.s3Client.send(command);
   }
 }

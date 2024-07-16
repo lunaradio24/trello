@@ -6,7 +6,6 @@ import {
   Patch,
   Post,
   Request,
-  Response,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -40,21 +39,20 @@ export class UserController {
       data,
     };
   }
-  
 
-    /** 비밀번호 변경 */
+  /** 비밀번호 변경 */
   @Patch('update-password')
   async updatePassword(@Request() req: any, @Body() updatePasswordDto: UpdatePasswordDto) {
-        const userId = req.user.id;
+    const userId = req.user.id;
     const { updatedAt } = await this.userService.updatePassword(userId, updatePasswordDto);
     return {
       status: HttpStatus.OK,
       message: '비밀번호 수정에 성공했습니다.',
       data: { updatedAt },
     };
-    }
+  }
 
-    /** 내 정보 수정 */
+  /** 내 정보 수정 */
   @Patch('update')
   async updateMe(@Request() req: any, @Body() updateMeDto: UpdateMeDto) {
     const userId = req.user.id;
@@ -66,7 +64,6 @@ export class UserController {
     };
   }
 
-  
   /** 프로필 이미지 업데이트 */
   @Post('update-image')
   @UseInterceptors(FileInterceptor('file'))
