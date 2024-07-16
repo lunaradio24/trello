@@ -87,39 +87,8 @@ export class CardService {
     return this.getCardById(id);
   }
 
-  // // 카드 담당자 추가 API
-  // async addAssignee(cardId: number, assigneeId: number): Promise<{ cardAssignee: CardAssignee; user: User }> {
-  //   const card = await this.cardRepository.findOne({ where: { id: cardId } });
-  //   if (!card) {
-  //     throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
-  //   }
-
-  //   const user = await this.userRepository.findOne({ where: { id: assigneeId } });
-  //   if (!user) {
-  //     throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
-  //   }
-
-  //   const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
-  //   await this.cardAssigneeRepository.save(cardAssignee);
-
-  //   return { cardAssignee, user };
-  // }
-
-  // // 카드 담당자 삭제 API
-  // async removeAssignee(cardId: number, assigneeId: number): Promise<void> {
-  //   const card = await this.cardRepository.findOne({ where: { id: cardId } });
-  //   if (!card) {
-  //     throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
-  //   }
-
-  //   await this.cardAssigneeRepository.delete({ cardId, assigneeId });
-  // }
-
-  // 카드 담당자 추가/삭제 API
-  async toggleAssignee(
-    cardId: number,
-    assigneeId: number,
-  ): Promise<{ cardAssignee?: CardAssignee; user: User; removed?: boolean }> {
+  // 카드 담당자 추가 API
+  async addAssignee(cardId: number, assigneeId: number): Promise<{ cardAssignee: CardAssignee; user: User }> {
     const card = await this.cardRepository.findOne({ where: { id: cardId } });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
@@ -132,13 +101,28 @@ export class CardService {
 
     const existingAssignee = await this.cardAssigneeRepository.findOne({ where: { cardId, assigneeId } });
     if (existingAssignee) {
-      await this.cardAssigneeRepository.delete({ cardId, assigneeId });
-      return { user, removed: true };
-    } else {
-      const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
-      await this.cardAssigneeRepository.save(cardAssignee);
-      return { cardAssignee, user };
+      throw new BadRequestException('이미 담당자로 추가된 사용자입니다.');
     }
+
+    const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
+    await this.cardAssigneeRepository.save(cardAssignee);
+
+    return { cardAssignee, user };
+  }
+
+  // 카드 담당자 삭제 API
+  async removeAssignee(cardId: number, assigneeId: number): Promise<void> {
+    const card = await this.cardRepository.findOne({ where: { id: cardId } });
+    if (!card) {
+      throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
+    }
+
+    const existingAssignee = await this.cardAssigneeRepository.findOne({ where: { cardId, assigneeId } });
+    if (!existingAssignee) {
+      throw new NotFoundException('삭제할 담당자가 없습니다.');
+    }
+
+    await this.cardAssigneeRepository.delete({ cardId, assigneeId });
   }
 
   //카드 이동 API
