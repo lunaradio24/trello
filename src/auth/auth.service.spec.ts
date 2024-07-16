@@ -154,7 +154,7 @@ describe('AuthService', () => {
         comments: [],
         boards: [],
         members: [],
-        cardAssignees: [],
+        assignee: [],
       });
 
       const result = await authService.signUp(signUpDto);
@@ -171,7 +171,7 @@ describe('AuthService', () => {
         comments: [],
         boards: [],
         members: [],
-        cardAssignees: [],
+        assignee: [],
       });
     });
   });
@@ -245,7 +245,7 @@ describe('AuthService', () => {
       const user = { id: 1, email: 'test@gmail.com', password: 'hashedpassword' } as User;
 
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
-      jest.spyOn(bcrypt, 'compare').mockImplementation(async () => false);
+      (bcrypt.compare as jest.Mock).mockImplementation(async () => false);
 
       const result = await authService.validateUser(signInDto);
       expect(result).toBeNull();
