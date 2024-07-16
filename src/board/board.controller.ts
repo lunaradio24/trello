@@ -106,8 +106,11 @@ export class BoardController {
   /** 보드 초대 링크 발송 */
   @Post(':boardId/invite')
   @UseGuards(AccessTokenGuard)
-  async sendVerificationEmail(@Param('boardId') boardId: number, @Body('email') email: string, @Req() req: any) {
-
+  async sendVerificationEmail(
+    @Param('boardId') boardId: number,
+    @Body() inviteBoardDto: InviteBoardDto,
+    @Req() req: any,
+  ) {
     const userId = req.user.id; //JWT토큰 에서 추출
     const token = await this.boardService.sendVerificationEmail(boardId, inviteBoardDto.email, userId);
     console.log(token);
