@@ -1,7 +1,7 @@
 import { IsEmail, IsNotEmpty, IsString, Validate } from 'class-validator';
 import { IsPasswordMatchingConstraint } from '../password-match.decorator';
 import { PickType } from '@nestjs/swagger';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 
 export class SignUpDto extends PickType(User, ['email', 'password', 'nickname']) {
   /**

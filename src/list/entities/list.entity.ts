@@ -10,8 +10,8 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { Board } from 'src/board/entities/board.entity';
-import { Card } from 'src/card/entities/card.entity';
+import { Board } from '../../board/entities/board.entity';
+import { Card } from '../../card/entities/card.entity';
 
 @Entity('lists')
 export class List {

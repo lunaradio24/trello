@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Checklist } from './entities/checklist.entity';
 import { Repository } from 'typeorm';
-import { Card } from 'src/card/entities/card.entity';
+import { Card } from '../card/entities/card.entity';
 import { CreateChecklistDto } from './dto/create-checklist.dto';
 import { UpdateChecklistDto } from './dto/update-checklist.dto';
 

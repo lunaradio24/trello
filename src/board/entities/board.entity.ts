@@ -10,8 +10,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { BoardMember } from './board-member.entity';
-import { List } from 'src/list/entities/list.entity';
-import { User } from 'src/user/entities/user.entity';
+import { List } from '../../list/entities/list.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity('boards')
 export class Board {

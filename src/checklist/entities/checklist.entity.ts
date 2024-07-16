@@ -1,4 +1,4 @@
-import { Card } from 'src/card/entities/card.entity';
+import { Card } from '../../card/entities/card.entity';
 import {
   Column,
   CreateDateColumn,

@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { BoardMemberType } from '../types/board-member.type';
 import { Board } from './board.entity';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity('board_members')
 export class BoardMember {
