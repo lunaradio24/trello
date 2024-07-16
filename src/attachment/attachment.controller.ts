@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Request,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,7 +19,8 @@ import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from '../s3/s3.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateAttachmentDto } from './dto/create-attachment.dto';
+import { Response } from 'express';
+import { Readable } from 'stream';
 
 @ApiTags('Attachment')
 @Controller('cards/:cardId/attachment')
@@ -68,5 +70,28 @@ export class AttachmentController {
       statusCode: HttpStatus.OK,
       message: '첨부파일 삭제에 성공했습니다.',
     };
+  }
+  // 첨부파일 다운로드
+  @Get(':attachmentId/download')
+  async downloadFile(@Param('attachmentId', ParseIntPipe) attachmentId: number, @Res() res: Response) {
+    const attachment = await this.attachmentService.getAttachmentById(attachmentId);
+
+    if (!attachment) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: '첨부파일을 찾을 수 없습니다.',
+      });
+    }
+
+    const fileBuffer = await this.s3Service.downloadFileFromS3(attachment.fileUrl);
+    const fileName = attachment.fileUrl.split('/').pop();
+    const fileExt = fileName.split('.').pop();
+
+    // Content-Type과 Content-Disposition 헤더 설정
+    res.setHeader('Content-Type', `image/${fileExt}`);
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+
+    // 파일 버퍼를 응답으로 전송
+    res.send(fileBuffer);
   }
 }
