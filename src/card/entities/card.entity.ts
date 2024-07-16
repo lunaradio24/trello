@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CardAssignee } from './card_assignee.entity';
+import { CardAssignee } from './card-assignee.entity';
 import { Comment } from '../../comment/entities/comment.entity';
 import { Attachment } from '../../attachment/entities/attachment.entity';
 import { Checklist } from '../../checklist/entities/checklist.entity';

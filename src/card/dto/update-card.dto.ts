@@ -1,9 +1,7 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateCardDto } from './create-card.dto';
-import { IsDate, IsHexColor, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsHexColor, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class UpdateCardDto extends PartialType(CreateCardDto) {
+export class UpdateCardDto {
   /**
    * 카드명
    * @example "카드 이름"
