@@ -34,7 +34,7 @@ export class Checklist {
   updatedAt: Date;
 
   @DeleteDateColumn()
-  deletedAt: Date | null;
+  deletedAt?: Date | null;
 
   @ManyToOne(() => Card, (card) => card.checklists)
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
