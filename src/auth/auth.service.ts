@@ -144,13 +144,13 @@ export class AuthService {
     const userId = payload.id;
 
     // Access Token, Refresh Token 생성
-    const accessTokenKey = this.configService.get('ACCESS_TOKEN_SECRET_KEY');
-    const accessTokenExp = this.configService.get('ACCESS_TOKEN_EXPIRED_IN');
-    const refreshTokenKey = this.configService.get('REFRESH_TOKEN_SECRET_KEY');
-    const refreshTokenExp = this.configService.get('ACCESS_TOKEN_EXPIRED_IN');
+    const accessKey = this.configService.get('ACCESS_TOKEN_SECRET_KEY');
+    const accessExp = this.configService.get('ACCESS_TOKEN_EXPIRED_IN');
+    const refreshKey = this.configService.get('REFRESH_TOKEN_SECRET_KEY');
+    const refreshExp = this.configService.get('REFRESH_TOKEN_EXPIRED_IN');
 
-    const accessToken = sign(payload, accessTokenKey, { expiresIn: accessTokenExp });
-    const refreshToken = sign(payload, refreshTokenKey, { expiresIn: refreshTokenExp });
+    const accessToken = sign(payload, accessKey, { expiresIn: accessExp });
+    const refreshToken = sign(payload, refreshKey, { expiresIn: refreshExp });
 
     // Refresh Token Hashing 후 DB에 저장
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
