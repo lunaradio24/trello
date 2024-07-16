@@ -140,23 +140,16 @@ export class CardService {
     }
 
     //오름차순으로 가져와 포지션 계산
-    const targetListCards = await this.cardRepository.find({
+    let targetListCards = await this.cardRepository.find({
       where: { list: { id: targetListId }, deletedAt: null },
       order: { position: 'ASC' },
     });
 
+    // 필터를 사용해서 cardId가 같은, 즉 현재 이동할 카드를 로직에서 제외하고 계산
+    targetListCards = targetListCards.filter((card) => card.id !== cardId);
+
     // targetIndex 값을 1부터 시작하게 입력한 값의 -1되는 변수 선언
     const realIndex = targetIndex - 1;
-
-    // 같은 리스트와 같은 인덱스로 이동하려는 경우
-    if (card.list.id === targetListId) {
-      const currentIndex = targetListCards.findIndex((c) => c.id === cardId);
-
-      //오류메시지
-      if (currentIndex === realIndex) {
-        throw new BadRequestException('같은 리스트의 같은 위치로 이동할 수 없습니다.');
-      }
-    }
 
     let newPosition: number;
 
