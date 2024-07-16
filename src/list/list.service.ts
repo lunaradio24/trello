@@ -6,7 +6,12 @@ import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { MoveListDto } from './dto/move-list.dto';
 import { Board } from 'src/board/entities/board.entity';
-import { INITIAL_POSITION_FACTOR, MAX_NUM_LISTS_IN_BOARD } from './constants/list.constant';
+import {
+  MAX_NUM_LISTS_IN_BOARD,
+  INITIAL_POSITION_FACTOR,
+  POSITION_RECALCULATION_THRESHOLD,
+  POSITION_MULTIPLIER,
+} from './constants/list.constant';
 
 @Injectable()
 export class ListService {
@@ -43,6 +48,9 @@ export class ListService {
       throw new ConflictException('리스트 생성 제한을 초과했습니다.');
     }
 
+    // 오름차순으로 다시 정렬
+    board.lists.sort((a, b) => a.position - b.position);
+
     // 새로 생성할 리스트의 position 설정
     const positionOfLastList = numLists > 0 ? board.lists[numLists - 1].position : null;
     const position = positionOfLastList ? positionOfLastList * 2 : INITIAL_POSITION_FACTOR;
@@ -55,6 +63,7 @@ export class ListService {
   async findOneByListId(listId: number): Promise<List> {
     const list = await this.listsRepository.findOne({
       where: { id: listId, deletedAt: null },
+      relations: ['board'],
     });
 
     if (!list) {
@@ -78,6 +87,11 @@ export class ListService {
     // 존재하는 리스트인지 확인
     const list = await this.findOneByListId(listId);
 
+    // 리스트가 지정된 보드에 속해 있는지 확인
+    if (list.board.id !== boardId) {
+      throw new BadRequestException('리스트가 지정된 보드에 속해 있지 않습니다.');
+    }
+
     // 리스트 수정
     await this.listsRepository.update(listId, updateListDto);
 
@@ -99,6 +113,11 @@ export class ListService {
     // 존재하는 리스트인지 확인
     const list = await this.findOneByListId(listId);
 
+    // 리스트가 지정된 보드에 속해 있는지 확인
+    if (list.board.id !== boardId) {
+      throw new BadRequestException('리스트가 지정된 보드에 속해 있지 않습니다.');
+    }
+
     // 리스트 삭제
     await this.listsRepository.softRemove(list);
 
@@ -113,77 +132,55 @@ export class ListService {
   }
 
   async move(listId: number, moveListDto: MoveListDto): Promise<List> {
-    const { boardId, targetListId, position } = moveListDto;
+    const { targetIndex } = moveListDto;
 
-    // 존재하는 리스트인지 확인
-    const list = await this.findOneByListId(listId);
+    const list = await this.listsRepository.findOne({ where: { id: listId }, relations: ['board'] });
+    if (!list) {
+      throw new NotFoundException('해당 리스트를 찾을 수 없습니다.');
+    }
 
-    // 오름차순으로 보드의 모든 리스트를 가져옴
+    const boardId = list.board.id;
+
     const boardLists = await this.listsRepository.find({
       where: { boardId },
       order: { position: 'ASC' },
     });
 
+    const realIndex = targetIndex - 1;
+
+    if (realIndex < 0 || realIndex >= boardLists.length) {
+      throw new BadRequestException('유효한 인덱스를 입력해주세요.');
+    }
+
+    if (boardLists.findIndex((l) => l.id === listId) === realIndex) {
+      throw new BadRequestException('같은 보드의 같은 위치로 이동할 수 없습니다.');
+    }
+
     let newPosition: number;
 
-    if (boardLists.length === 0) {
-      // 보드에 다른 리스트가 없다면 새 리스트의 포지션 값을 1024로 설정
-      newPosition = 1024;
+    if (realIndex === 0) {
+      newPosition = boardLists[0].position / POSITION_MULTIPLIER;
+    } else if (realIndex === boardLists.length - 1) {
+      newPosition = boardLists[boardLists.length - 1].position * POSITION_MULTIPLIER;
     } else {
-      // targetListId가 제공되지 않았을 경우 에러 처리
-      if (!targetListId) {
-        throw new BadRequestException('타겟 리스트 ID를 입력해주세요.');
-      }
-
-      const targetListIndex = boardLists.findIndex((l) => l.id === targetListId);
-
-      if (targetListIndex < 0) {
-        throw new BadRequestException('리스트가 이동할 곳을 명확히 입력해주세요.');
-      }
-
-      const targetList = boardLists[targetListIndex];
-
-      // 리스트가 이동할 곳이 타겟 리스트의 위일 때
-      if (position === 'before') {
-        const prevList = boardLists[targetListIndex - 1];
-
-        if (prevList) {
-          newPosition = (prevList.position + targetList.position) / 2;
-        } else {
-          newPosition = targetList.position / 2;
-        }
-      } else if (position === 'after') {
-        // 리스트가 이동할 곳이 타겟 리스트의 아래일 때
-        const nextList = boardLists[targetListIndex + 1];
-
-        if (nextList) {
-          newPosition = (targetList.position + nextList.position) / 2;
-        } else {
-          newPosition = targetList.position * 2;
-        }
-      } else {
-        throw new Error('포지션 값이 올바르지 않습니다.');
-      }
+      const prevList = boardLists[realIndex - 1];
+      const nextList = boardLists[realIndex];
+      newPosition = (prevList.position + nextList.position) / POSITION_MULTIPLIER;
     }
 
-    /**
-     * 소수점이 0.2미만으로 떨어지면 position 새로고침
-     * 인덱스에 따라 1024의 2의 제곱으로 생성
-     */
-    if (newPosition % 1 !== 0 && newPosition % 1 < 0.2) {
-      // 포지션 값들을 내림차순으로 정렬
+    if (newPosition % 1 !== 0 && newPosition % 1 < POSITION_RECALCULATION_THRESHOLD) {
       boardLists.sort((a, b) => b.position - a.position);
-      const factor = 1024;
       for (let i = 0; i < boardLists.length; i++) {
-        boardLists[i].position = factor * Math.pow(2, i);
+        boardLists[i].position = INITIAL_POSITION_FACTOR * Math.pow(POSITION_MULTIPLIER, i);
       }
       await this.listsRepository.save(boardLists);
-      newPosition = factor * Math.pow(2, boardLists.length);
+      newPosition = INITIAL_POSITION_FACTOR * Math.pow(POSITION_MULTIPLIER, boardLists.length);
     }
 
-    // 리스트의 position 값 업데이트
     list.position = newPosition;
-    return this.listsRepository.save(list);
+    await this.listsRepository.save(list);
+
+    return list;
   }
 
   async findAll(boardId: number) {
