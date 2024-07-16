@@ -4,7 +4,7 @@ import { UpdateCardDto } from './dto/update-card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from './entities/card.entity';
 import { Repository } from 'typeorm';
-import { CardAssignee } from './entities/card_assignee.entity';
+import { CardAssignee } from './entities/card-assignee.entity';
 import { MoveCardDto } from './dto/move-card.dto';
 import { List } from '../list/entities/list.entity';
 import { User } from '../user/entities/user.entity';

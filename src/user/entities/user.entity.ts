@@ -12,7 +12,7 @@ import { RefreshToken } from '../../auth/entities/refresh-token.entity';
 import { Comment } from '../../comment/entities/comment.entity';
 import { Board } from '../../board/entities/board.entity';
 import { BoardMember } from '../../board/entities/board-member.entity';
-import { CardAssignee } from '../../card/entities/card_assignee.entity';
+import { CardAssignee } from '../../card/entities/card-assignee.entity';
 
 @Entity({ name: 'users' })
 export class User {

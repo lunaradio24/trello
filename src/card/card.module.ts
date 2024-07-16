@@ -3,7 +3,7 @@ import { CardService } from './card.service';
 import { CardController } from './card.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Card } from './entities/card.entity';
-import { CardAssignee } from './entities/card_assignee.entity';
+import { CardAssignee } from './entities/card-assignee.entity';
 import { List } from '../list/entities/list.entity';
 import { User } from '../user/entities/user.entity';
 import { BoardMember } from 'src/board/entities/board-member.entity';
