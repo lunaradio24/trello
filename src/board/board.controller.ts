@@ -19,6 +19,7 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { ListService } from 'src/list/list.service';
 import { CardService } from 'src/card/card.service';
 import { ApiTags } from '@nestjs/swagger';
+import { InviteBoardDto } from './dto/invite-board.dto';
 
 @ApiTags('Boards')
 @Controller('boards')
@@ -106,8 +107,9 @@ export class BoardController {
   @Post(':boardId/invite')
   @UseGuards(AccessTokenGuard)
   async sendVerificationEmail(@Param('boardId') boardId: number, @Body('email') email: string, @Req() req: any) {
+
     const userId = req.user.id; //JWT토큰 에서 추출
-    const token = await this.boardService.sendVerificationEmail(boardId, email, userId);
+    const token = await this.boardService.sendVerificationEmail(boardId, inviteBoardDto.email, userId);
     console.log(token);
     return {
       message: '초대 링크가 전송되었습니다.',

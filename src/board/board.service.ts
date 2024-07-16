@@ -59,13 +59,21 @@ export class BoardService {
   }
 
   async findAll(userId: number) {
-    const joinedBoardMembers = await this.boardMemberRepository.find({
-      where: {
-        memberId: userId,
-      },
-      relations: ['board'],
-    });
-    const joinedBoards = joinedBoardMembers.map((boardMember) => boardMember.board);
+    const joinedBoards = await this.boardRepository
+      .createQueryBuilder('board')
+      .leftJoin('board.members', 'boardMember')
+      .where('boardMember.memberId = :userId', { userId })
+      .andWhere('board.deletedAt IS NULL')
+      .select([
+        'board.id',
+        'board.adminId',
+        'board.title',
+        'board.backgroundColor',
+        'board.description',
+        'board.createdAt',
+        'board.updatedAt',
+      ])
+      .getMany();
     return joinedBoards;
   }
 
@@ -122,8 +130,15 @@ export class BoardService {
     if (userId !== board.adminId) {
       throw new UnauthorizedException('삭제 권한이 없습니다.');
     }
-    const deletedBoard = await this.boardRepository.softDelete(boardId);
-    return deletedBoard;
+    await this.boardRepository.softDelete(boardId);
+    const deletedBoard = await this.boardRepository.findOne({
+      where: {
+        id: boardId,
+      },
+      withDeleted: true,
+      select: ['id', 'deletedAt'],
+    });
+    return { boardId, deletedAt: deletedBoard.deletedAt };
   }
 
   async sendVerificationEmail(boardId: number, email: string, userId: number): Promise<string> {
