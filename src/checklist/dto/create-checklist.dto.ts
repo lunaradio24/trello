@@ -1,6 +1,7 @@
 import { PickType } from '@nestjs/swagger';
 import { Checklist } from '../entities/checklist.entity';
-import { IsDate, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsDateString, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateChecklistDto extends PickType(Checklist, ['cardId', 'content', 'dueDate']) {
   /**
@@ -23,7 +24,7 @@ export class CreateChecklistDto extends PickType(Checklist, ['cardId', 'content'
    * 마감일
    * @example "2024-07-17T12:00:00.000Z"
    */
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   dueDate: Date;
 }

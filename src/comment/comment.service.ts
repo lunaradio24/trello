@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommentDto } from './dto/comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
@@ -68,8 +68,9 @@ export class CommentService {
     // 존재하는 카드인지 확인
     const { cardId } = commentDto;
     const card = await this.cardRepository.findOne({
+      relations: ['comments'],
       where: { id: cardId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      select: ['id', 'comments'],
     });
 
     if (!card) {
@@ -86,13 +87,22 @@ export class CommentService {
       throw new NotFoundException('존재하지 않는 댓글입니다.');
     }
 
+    // 해당 카드의 댓글인지 확인
+    const indexOfComment = card.comments.findIndex((comment) => comment.id === commentId);
+    if (indexOfComment < 0) {
+      throw new BadRequestException('해당 카드의 댓글이 아닙니다.');
+    }
+
     // 댓글 작성자 본인인지 확인
     if (comment.commenterId !== userId) {
       throw new ForbiddenException('접근 권한이 없습니다.');
     }
 
     // 댓글 수정
-    return await this.commentRepository.update({ id: commentId }, commentDto);
+    await this.commentRepository.update({ id: commentId }, commentDto);
+
+    // 수정된 댓글 반환
+    return await this.commentRepository.findOneBy({ id: commentId });
   }
 
   async delete(userId: number, commentId: number, cardId: number) {
