@@ -22,8 +22,8 @@ export class CommentService {
 
     // 존재하는 카드인지 확인
     const card = await this.cardRepository.findOne({
-      where: { id: cardId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      where: { id: cardId },
+      select: ['id'],
     });
 
     if (!card) {
@@ -37,8 +37,8 @@ export class CommentService {
   async getListByCardId(cardId: number) {
     // 존재하는 카드인지 확인
     const card = await this.cardRepository.findOne({
-      where: { id: cardId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      where: { id: cardId },
+      select: ['id'],
     });
 
     if (!card) {
@@ -46,14 +46,14 @@ export class CommentService {
     }
 
     // 카드의 댓글 목록 조회
-    return await this.commentRepository.find({ where: { cardId, deletedAt: null } });
+    return await this.commentRepository.find({ where: { cardId } });
   }
 
   async getListByCommenterId(commenterId: number) {
     // 존재하는 유저인지 확인
     const user = await this.userRepository.findOne({
-      where: { id: commenterId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      where: { id: commenterId },
+      select: ['id'],
     });
 
     if (!user) {
@@ -61,7 +61,7 @@ export class CommentService {
     }
 
     // 내 댓글 목록 조회
-    return await this.commentRepository.find({ where: { commenterId, deletedAt: null } });
+    return await this.commentRepository.find({ where: { commenterId } });
   }
 
   async update(userId: number, commentId: number, commentDto: CommentDto) {
@@ -69,7 +69,7 @@ export class CommentService {
     const { cardId } = commentDto;
     const card = await this.cardRepository.findOne({
       relations: ['comments'],
-      where: { id: cardId, deletedAt: null },
+      where: { id: cardId },
       select: ['id', 'comments'],
     });
 
@@ -79,8 +79,8 @@ export class CommentService {
 
     // 존재하는 댓글인지 확인
     const comment = await this.commentRepository.findOne({
-      where: { id: commentId, deletedAt: null },
-      select: ['id', 'commenterId', 'deletedAt'],
+      where: { id: commentId },
+      select: ['id', 'commenterId'],
     });
 
     if (!comment) {
@@ -108,8 +108,8 @@ export class CommentService {
   async delete(userId: number, commentId: number, cardId: number) {
     // 존재하는 카드인지 확인
     const card = await this.cardRepository.findOne({
-      where: { id: cardId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      where: { id: cardId },
+      select: ['id'],
     });
 
     if (!card) {
@@ -118,8 +118,8 @@ export class CommentService {
 
     // 존재하는 댓글인지 확인
     const comment = await this.commentRepository.findOne({
-      where: { id: commentId, deletedAt: null },
-      select: ['id', 'commenterId', 'deletedAt'],
+      where: { id: commentId },
+      select: ['id', 'commenterId'],
     });
 
     if (!comment) {
@@ -135,12 +135,12 @@ export class CommentService {
     await this.commentRepository.softDelete({ id: commentId });
 
     // 삭제 시간 반환
-    const { deletedAt } = await this.commentRepository.findOne({
+    const deletedComment = await this.commentRepository.findOne({
       where: { id: commentId },
       withDeleted: true,
-      select: ['id', 'deletedAt'],
     });
+    console.log(deletedComment);
 
-    return { deletedAt };
+    return { id: commentId, deletedAt: deletedComment.deletedAt };
   }
 }
