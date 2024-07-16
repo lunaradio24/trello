@@ -5,69 +5,118 @@ import { List } from './entities/list.entity';
 import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { MoveListDto } from './dto/move-list.dto';
+import { Board } from 'src/board/entities/board.entity';
+import { INITIAL_POSITION_FACTOR, MAX_NUM_LISTS_IN_BOARD } from './constants/list.constant';
 
 @Injectable()
 export class ListService {
   constructor(
     @InjectRepository(List)
     private listsRepository: Repository<List>,
+    @InjectRepository(Board)
+    private boardRepository: Repository<Board>,
   ) {}
 
   async create(createListDto: CreateListDto): Promise<List> {
     const { boardId, title } = createListDto;
 
-    const listCount = await this.listsRepository.count({ where: { boardId } });
-    if (listCount >= 12) {
+    // 존재하는 보드인지 확인
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId, deletedAt: null },
+      relations: ['lists'],
+      select: ['id', 'lists'],
+      order: {
+        lists: {
+          position: 'DESC',
+        },
+      },
+    });
+
+    if (!board) {
+      throw new NotFoundException('존재하지 않는 보드입니다.');
+    }
+
+    // 보드에 속한 리스트 개수 확인
+    const numLists = board.lists.length;
+
+    if (numLists >= MAX_NUM_LISTS_IN_BOARD) {
       throw new ConflictException('리스트 생성 제한을 초과했습니다.');
     }
 
-    const lastList = await this.listsRepository.findOne({
-      where: { boardId },
-      order: { position: 'DESC' },
-    });
+    // 새로 생성할 리스트의 position 설정
+    const positionOfLastList = numLists > 0 ? board.lists[numLists - 1].position : null;
+    const position = positionOfLastList ? positionOfLastList * 2 : INITIAL_POSITION_FACTOR;
 
-    const position = lastList ? lastList.position * 2 : 1024;
-
-    const newList = this.listsRepository.create({
-      boardId,
-      title,
-      position,
-    });
-
+    // DB에 리스트 생성 및 반환
+    const newList = this.listsRepository.create({ boardId, title, position });
     return this.listsRepository.save(newList);
   }
 
-  async findOne(boardId: number, listId: number): Promise<List> {
-    const list = await this.listsRepository.findOne({ where: { id: listId, boardId } });
+  async findOneByListId(listId: number): Promise<List> {
+    const list = await this.listsRepository.findOne({
+      where: { id: listId, deletedAt: null },
+    });
+
     if (!list) {
-      throw new NotFoundException(`해당 보드의 ${listId} 리스트를 찾을 수 없습니다.`);
+      throw new NotFoundException('존재하지 않는 리스트입니다.');
     }
+
     return list;
   }
 
   async update(boardId: number, listId: number, updateListDto: UpdateListDto): Promise<List> {
-    const list = await this.findOne(boardId, listId);
+    // 존재하는 보드인지 확인
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId, deletedAt: null },
+      select: ['id'],
+    });
+
+    if (!board) {
+      throw new NotFoundException('존재하지 않는 보드입니다.');
+    }
+
+    // 존재하는 리스트인지 확인
+    const list = await this.findOneByListId(listId);
+
+    // 리스트 수정
     await this.listsRepository.update(listId, updateListDto);
-    return this.findOne(boardId, listId);
+
+    // 수정된 리스트 반환
+    return await this.findOneByListId(listId);
   }
 
   async remove(boardId: number, listId: number): Promise<{ id: number; deletedAt: Date }> {
-    const list = await this.findOne(boardId, listId);
-    if (list.deletedAt) {
-      throw new ConflictException(`해당 리스트는 이미 삭제되었습니다.`);
+    // 존재하는 보드인지 확인
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId, deletedAt: null },
+      select: ['id'],
+    });
+
+    if (!board) {
+      throw new NotFoundException('존재하지 않는 보드입니다.');
     }
-    await this.listsRepository.softDelete(listId);
-    const deletedList = await this.listsRepository.findOne({ where: { id: listId }, withDeleted: true });
-    return { id: deletedList.id, deletedAt: deletedList.deletedAt };
+
+    // 존재하는 리스트인지 확인
+    const list = await this.findOneByListId(listId);
+
+    // 리스트 삭제
+    await this.listsRepository.softRemove(list);
+
+    // 삭제된 리스트 ID와 삭제 시간 반환
+    const { id, deletedAt } = await this.listsRepository.findOne({
+      where: { id: listId },
+      withDeleted: true,
+      select: ['id', 'deletedAt'],
+    });
+
+    return { id, deletedAt };
   }
 
   async move(listId: number, moveListDto: MoveListDto): Promise<List> {
     const { boardId, targetListId, position } = moveListDto;
 
-    const list = await this.findOne(boardId, listId);
-    if (!list) {
-      throw new NotFoundException('해당 리스트를 찾을 수 없습니다.');
-    }
+    // 존재하는 리스트인지 확인
+    const list = await this.findOneByListId(listId);
 
     const targetBoard = await this.listsRepository.findOne({ where: { id: boardId } });
     if (!targetBoard) {

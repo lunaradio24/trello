@@ -37,7 +37,7 @@ export class ListController {
 
   /** 리스트 목록 조회 */
   @Get()
-  async findAll(@Query('boardId') boardId: number) {
+  async findAll(@Query('boardId', ParseIntPipe) boardId: number) {
     const lists = await this.listService.findAll(boardId);
     return {
       status: HttpStatus.OK,
@@ -61,7 +61,6 @@ export class ListController {
   /** 리스트 이동 */
   @Patch(':listId/move')
   async move(@Param('listId', ParseIntPipe) listId: number, @Body() moveListDto: MoveListDto) {
-    const { boardId } = moveListDto;
     const movedList = await this.listService.move(listId, moveListDto);
     return {
       status: HttpStatus.OK,
