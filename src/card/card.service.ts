@@ -8,6 +8,12 @@ import { CardAssignee } from './entities/card_assignee.entity';
 import { MoveCardDto } from './dto/move-card.dto';
 import { List } from 'src/list/entities/list.entity';
 import { User } from 'src/user/entities/user.entity';
+import {
+  INITIAL_POSITION,
+  MAX_CARD_COUNT,
+  POSITION_MULTIPLIER,
+  POSITION_RECALCULATION_THRESHOLD,
+} from './constants/card.constant';
 
 //레포지토리 가져오기
 @Injectable()
@@ -34,17 +40,17 @@ export class CardService {
     }
 
     //카드 생성 제한
-    const cardCount = await this.cardRepository.count({ where: { list: { id: listId } } });
-    if (cardCount >= 12) {
-      throw new Error('카드 생성 제한을 초과했습니다.');
+    const cardCount = await this.cardRepository.count({ where: { list: { id: listId }, deletedAt: null } });
+    if (cardCount >= MAX_CARD_COUNT) {
+      throw new BadRequestException('카드 생성 제한을 초과했습니다.');
     }
 
     // 포지션 값 계산
     const lastCard = await this.cardRepository.findOne({
-      where: { list: { id: listId } },
+      where: { list: { id: listId }, deletedAt: null },
       order: { position: 'ASC' },
     });
-    const position = lastCard ? lastCard.position * 2 : 1024;
+    const position = lastCard ? lastCard.position * POSITION_MULTIPLIER : INITIAL_POSITION;
 
     const card = this.cardRepository.create({
       list,
@@ -81,8 +87,39 @@ export class CardService {
     return this.getCardById(id);
   }
 
-  // 카드 담당자 추가 API
-  async addAssignee(cardId: number, assigneeId: number): Promise<{ cardAssignee: CardAssignee; user: User }> {
+  // // 카드 담당자 추가 API
+  // async addAssignee(cardId: number, assigneeId: number): Promise<{ cardAssignee: CardAssignee; user: User }> {
+  //   const card = await this.cardRepository.findOne({ where: { id: cardId } });
+  //   if (!card) {
+  //     throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
+  //   }
+
+  //   const user = await this.userRepository.findOne({ where: { id: assigneeId } });
+  //   if (!user) {
+  //     throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
+  //   }
+
+  //   const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
+  //   await this.cardAssigneeRepository.save(cardAssignee);
+
+  //   return { cardAssignee, user };
+  // }
+
+  // // 카드 담당자 삭제 API
+  // async removeAssignee(cardId: number, assigneeId: number): Promise<void> {
+  //   const card = await this.cardRepository.findOne({ where: { id: cardId } });
+  //   if (!card) {
+  //     throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
+  //   }
+
+  //   await this.cardAssigneeRepository.delete({ cardId, assigneeId });
+  // }
+
+  // 카드 담당자 추가/삭제 API
+  async toggleAssignee(
+    cardId: number,
+    assigneeId: number,
+  ): Promise<{ cardAssignee?: CardAssignee; user: User; removed?: boolean }> {
     const card = await this.cardRepository.findOne({ where: { id: cardId } });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
@@ -93,27 +130,22 @@ export class CardService {
       throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
     }
 
-    const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
-    await this.cardAssigneeRepository.save(cardAssignee);
-
-    return { cardAssignee, user };
-  }
-
-  // 카드 담당자 삭제 API
-  async removeAssignee(cardId: number, assigneeId: number): Promise<void> {
-    const card = await this.cardRepository.findOne({ where: { id: cardId } });
-    if (!card) {
-      throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
+    const existingAssignee = await this.cardAssigneeRepository.findOne({ where: { cardId, assigneeId } });
+    if (existingAssignee) {
+      await this.cardAssigneeRepository.delete({ cardId, assigneeId });
+      return { user, removed: true };
+    } else {
+      const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
+      await this.cardAssigneeRepository.save(cardAssignee);
+      return { cardAssignee, user };
     }
-
-    await this.cardAssigneeRepository.delete({ cardId, assigneeId });
   }
 
   //카드 이동 API
   async moveCardById(cardId: number, moveCardDto: MoveCardDto): Promise<Card> {
     const { listId: targetListId, targetIndex } = moveCardDto;
 
-    const card = await this.cardRepository.findOne({ where: { id: cardId } });
+    const card = await this.cardRepository.findOne({ where: { id: cardId }, relations: ['list'] });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
@@ -125,31 +157,41 @@ export class CardService {
 
     //오름차순으로 가져와 포지션 계산
     const targetListCards = await this.cardRepository.find({
-      where: { list: { id: targetListId } },
+      where: { list: { id: targetListId }, deletedAt: null },
       order: { position: 'ASC' },
     });
+
+    // targetIndex 값을 1부터 시작하게 입력한 값의 -1되는 변수 선언
+    const realIndex = targetIndex - 1;
+
+    // 같은 리스트와 같은 인덱스로 이동하려는 경우
+    if (card.list.id === targetListId) {
+      const currentIndex = targetListCards.findIndex((c) => c.id === cardId);
+
+      //오류메시지
+      if (currentIndex === realIndex) {
+        throw new BadRequestException('같은 리스트의 같은 위치로 이동할 수 없습니다.');
+      }
+    }
 
     let newPosition: number;
 
     if (targetListCards.length === 0) {
-      //옮길 리스트에 다른 카드가 없다면 새 카드의 포지션 값을 1024로 설정
-      newPosition = 1024;
+      // 옮길 리스트에 다른 카드가 없다면 새 카드의 포지션 값을 INITIAL_POSITION으로 설정
+      newPosition = INITIAL_POSITION;
     } else {
-      // targetIndex 값을 1부터 시작하도록 조정
-      const adjustedIndex = targetIndex - 1;
-
-      if (adjustedIndex < 0 || adjustedIndex > targetListCards.length) {
+      if (realIndex < 0 || realIndex > targetListCards.length) {
         throw new BadRequestException('유효한 인덱스를 입력해주세요.');
       }
 
-      if (adjustedIndex === 0) {
-        newPosition = targetListCards[0].position / 2;
-      } else if (adjustedIndex === targetListCards.length) {
-        newPosition = targetListCards[targetListCards.length - 1].position * 2;
+      if (realIndex === 0) {
+        newPosition = targetListCards[0].position / POSITION_MULTIPLIER;
+      } else if (realIndex === targetListCards.length) {
+        newPosition = targetListCards[targetListCards.length - 1].position * POSITION_MULTIPLIER;
       } else {
-        const prevCard = targetListCards[adjustedIndex - 1];
-        const nextCard = targetListCards[adjustedIndex];
-        newPosition = (prevCard.position + nextCard.position) / 2;
+        const prevCard = targetListCards[realIndex - 1];
+        const nextCard = targetListCards[realIndex];
+        newPosition = (prevCard.position + nextCard.position) / POSITION_MULTIPLIER;
       }
     }
 
@@ -157,21 +199,22 @@ export class CardService {
      * 소수점이 0.2미만으로 떨어지면 position 새로고침
      * 인덱스에 따라 1024의 2의 제곱으로 생성
      */
-    if (newPosition % 1 !== 0 && newPosition % 1 < 0.2) {
+    if (newPosition % 1 !== 0 && newPosition % 1 < POSITION_RECALCULATION_THRESHOLD) {
       // 포지션 값들을 내림차순으로 정렬
       targetListCards.sort((a, b) => b.position - a.position);
-      const factor = 1024;
       for (let i = 0; i < targetListCards.length; i++) {
-        targetListCards[i].position = factor * Math.pow(2, i);
+        targetListCards[i].position = INITIAL_POSITION * Math.pow(POSITION_MULTIPLIER, i);
       }
       await this.cardRepository.save(targetListCards);
-      newPosition = factor * Math.pow(2, targetListCards.length);
+      newPosition = INITIAL_POSITION * Math.pow(POSITION_MULTIPLIER, targetListCards.length);
     }
 
     // 카드의 listId와 position 값 업데이트
     card.list = targetList;
     card.position = newPosition;
-    return this.cardRepository.save(card);
+    await this.cardRepository.save(card);
+
+    return card;
   }
 
   //카드 소프트 딜리트
@@ -191,6 +234,10 @@ export class CardService {
         list: {
           id: listId,
         },
+        deletedAt: null,
+      },
+      order: {
+        position: 'ASC',
       },
     });
     return cards;

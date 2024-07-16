@@ -60,37 +60,72 @@ export class CardController {
     };
   }
 
-  /**카드 담당자 추가 */
-  @Post(':cardId/assignees/:assigneeId')
-  async addAssignee(
-    @Param('cardId', ParseIntPipe) cardId: number,
-    @Param('assigneeId', ParseIntPipe) assIgneeId: number,
-  ) {
-    const { cardAssignee, user } = await this.cardService.addAssignee(cardId, assIgneeId);
-    return {
-      status: HttpStatus.OK,
-      message: '카드 담당자를 추가했습니다.',
-      data: {
-        cardAssignee,
-        user: {
-          id: user.id,
-          email: user.email,
-        },
-      },
-    };
-  }
+  // /**카드 담당자 추가 */
+  // @Post(':cardId/assignees/:assigneeId')
+  // async addAssignee(
+  //   @Param('cardId', ParseIntPipe) cardId: number,
+  //   @Param('assigneeId', ParseIntPipe) assIgneeId: number,
+  // ) {
+  //   const { cardAssignee, user } = await this.cardService.addAssignee(cardId, assIgneeId);
+  //   return {
+  //     status: HttpStatus.OK,
+  //     message: '카드 담당자를 추가했습니다.',
+  //     data: {
+  //       cardAssignee,
+  //       user: {
+  //         id: user.id,
+  //         email: user.email,
+  //       },
+  //     },
+  //   };
+  // }
 
-  /**카드 담당자 삭제 */
-  @Delete(':cardId/assignees/:assigneeId')
-  async removeAssignee(
+  // /**카드 담당자 삭제 */
+  // @Delete(':cardId/assignees/:assigneeId')
+  // async removeAssignee(
+  //   @Param('cardId', ParseIntPipe) cardId: number,
+  //   @Param('assigneeId', ParseIntPipe) assigneeId: number,
+  // ) {
+  //   await this.cardService.removeAssignee(cardId, assigneeId);
+  //   return {
+  //     status: HttpStatus.OK,
+  //     message: '카드 담당자를 삭제했습니다.',
+  //   };
+  // }
+
+  /** 카드 담당자 추가/삭제 */
+  @Post(':cardId/assignees/:assigneeId')
+  async toggleAssignee(
     @Param('cardId', ParseIntPipe) cardId: number,
     @Param('assigneeId', ParseIntPipe) assigneeId: number,
   ) {
-    await this.cardService.removeAssignee(cardId, assigneeId);
-    return {
-      status: HttpStatus.OK,
-      message: '카드 담당자를 삭제했습니다.',
-    };
+    const result = await this.cardService.toggleAssignee(cardId, assigneeId);
+    if (result.removed) {
+      return {
+        status: HttpStatus.OK,
+        message: '카드 어싸이니 삭제에 성공했습니다.',
+        data: {
+          user: {
+            id: result.user.id,
+            email: result.user.email,
+            image: result.user.image,
+          },
+        },
+      };
+    } else {
+      return {
+        status: HttpStatus.OK,
+        message: '카드 어싸이니 추가에 성공했습니다.',
+        data: {
+          cardAssignee: result.cardAssignee,
+          user: {
+            id: result.user.id,
+            email: result.user.email,
+            image: result.user.image,
+          },
+        },
+      };
+    }
   }
 
   /** 카드 이동 */
