@@ -18,12 +18,12 @@ export class ChecklistService {
   async create(createChecklistDto: CreateChecklistDto) {
     // 존재하는 카드인지 확인
     const { cardId } = createChecklistDto;
-    const card = await this.cardRepository.findOne({ where: { id: cardId, deletedAt: null } });
+    const card = await this.cardRepository.findOne({ where: { id: cardId } });
     if (!card) {
       throw new NotFoundException('존재하지 않는 카드입니다.');
     }
 
-    return await this.checklistRepository.insert(createChecklistDto);
+    return await this.checklistRepository.save(createChecklistDto);
   }
 
   async getOneByChecklistId(checklistId: number) {
@@ -31,13 +31,13 @@ export class ChecklistService {
   }
 
   async getListByCardId(cardId: number) {
-    return await this.checklistRepository.findBy({ cardId });
+    return await this.checklistRepository.find({ where: { cardId } });
   }
 
   async check(checklistId: number) {
     // 존재하는 체크리스트인지 확인
     const checklist = await this.checklistRepository.findOne({
-      where: { id: checklistId, deletedAt: null },
+      where: { id: checklistId },
       select: ['id', 'isChecked'],
     });
 
@@ -57,13 +57,13 @@ export class ChecklistService {
       select: ['id', 'updatedAt'],
     });
 
-    return { checkedAt: updatedAt };
+    return { id: checklistId, checkedAt: updatedAt };
   }
 
   async uncheck(checklistId: number) {
     // 존재하는 체크리스트인지 확인
     const checklist = await this.checklistRepository.findOne({
-      where: { id: checklistId, deletedAt: null },
+      where: { id: checklistId },
       select: ['id', 'isChecked'],
     });
 
@@ -83,13 +83,13 @@ export class ChecklistService {
       select: ['id', 'updatedAt'],
     });
 
-    return { uncheckedAt: updatedAt };
+    return { id: checklistId, uncheckedAt: updatedAt };
   }
 
   async update(checklistId: number, updateChecklistDto: UpdateChecklistDto) {
     // 존재하는 체크리스트인지 확인
     const checklist = await this.checklistRepository.findOne({
-      where: { id: checklistId, deletedAt: null },
+      where: { id: checklistId },
       select: ['id', 'content', 'dueDate'],
     });
 
@@ -98,15 +98,15 @@ export class ChecklistService {
     }
 
     // 체크리스트 수정
-    const updatedChecklist = await this.checklistRepository.update({ id: checklistId }, { ...updateChecklistDto });
-    return updatedChecklist;
+    await this.checklistRepository.update({ id: checklistId }, { ...updateChecklistDto });
+    return { id: checklistId, ...updateChecklistDto };
   }
 
   async delete(checklistId: number) {
     // 존재하는 체크리스트인지 확인
     const checklist = await this.checklistRepository.findOne({
-      where: { id: checklistId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      where: { id: checklistId },
+      select: ['id'],
     });
 
     if (!checklist) {
@@ -115,11 +115,17 @@ export class ChecklistService {
 
     // 체크리스트 삭제 (soft delete)
     await this.checklistRepository.softDelete({ id: checklistId });
-    const { deletedAt } = await this.checklistRepository.findOne({
+
+    const deletedChecklist = await this.checklistRepository.findOne({
       where: { id: checklistId },
+      withDeleted: true,
       select: ['id', 'deletedAt'],
     });
+    console.log(deletedChecklist);
+    if (!deletedChecklist || !deletedChecklist.deletedAt) {
+      throw new NotFoundException('삭제된 체크리스트를 찾을 수 없습니다.');
+    }
 
-    return { deletedAt };
+    return { id: checklistId, deletedAt: deletedChecklist.deletedAt };
   }
 }

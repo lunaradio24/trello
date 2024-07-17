@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommentDto } from './dto/comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
@@ -22,8 +22,8 @@ export class CommentService {
 
     // 존재하는 카드인지 확인
     const card = await this.cardRepository.findOne({
-      where: { id: cardId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      where: { id: cardId },
+      select: ['id'],
     });
 
     if (!card) {
@@ -37,8 +37,8 @@ export class CommentService {
   async getListByCardId(cardId: number) {
     // 존재하는 카드인지 확인
     const card = await this.cardRepository.findOne({
-      where: { id: cardId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      where: { id: cardId },
+      select: ['id'],
     });
 
     if (!card) {
@@ -46,14 +46,14 @@ export class CommentService {
     }
 
     // 카드의 댓글 목록 조회
-    return await this.commentRepository.find({ where: { cardId, deletedAt: null } });
+    return await this.commentRepository.find({ where: { cardId } });
   }
 
   async getListByCommenterId(commenterId: number) {
     // 존재하는 유저인지 확인
     const user = await this.userRepository.findOne({
-      where: { id: commenterId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      where: { id: commenterId },
+      select: ['id'],
     });
 
     if (!user) {
@@ -61,15 +61,16 @@ export class CommentService {
     }
 
     // 내 댓글 목록 조회
-    return await this.commentRepository.find({ where: { commenterId, deletedAt: null } });
+    return await this.commentRepository.find({ where: { commenterId } });
   }
 
   async update(userId: number, commentId: number, commentDto: CommentDto) {
     // 존재하는 카드인지 확인
     const { cardId } = commentDto;
     const card = await this.cardRepository.findOne({
-      where: { id: cardId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      relations: ['comments'],
+      where: { id: cardId },
+      select: ['id', 'comments'],
     });
 
     if (!card) {
@@ -78,12 +79,18 @@ export class CommentService {
 
     // 존재하는 댓글인지 확인
     const comment = await this.commentRepository.findOne({
-      where: { id: commentId, deletedAt: null },
-      select: ['id', 'commenterId', 'deletedAt'],
+      where: { id: commentId },
+      select: ['id', 'commenterId'],
     });
 
     if (!comment) {
       throw new NotFoundException('존재하지 않는 댓글입니다.');
+    }
+
+    // 해당 카드의 댓글인지 확인
+    const indexOfComment = card.comments.findIndex((comment) => comment.id === commentId);
+    if (indexOfComment < 0) {
+      throw new BadRequestException('해당 카드의 댓글이 아닙니다.');
     }
 
     // 댓글 작성자 본인인지 확인
@@ -92,14 +99,17 @@ export class CommentService {
     }
 
     // 댓글 수정
-    return await this.commentRepository.update({ id: commentId }, commentDto);
+    await this.commentRepository.update({ id: commentId }, commentDto);
+
+    // 수정된 댓글 반환
+    return await this.commentRepository.findOneBy({ id: commentId });
   }
 
   async delete(userId: number, commentId: number, cardId: number) {
     // 존재하는 카드인지 확인
     const card = await this.cardRepository.findOne({
-      where: { id: cardId, deletedAt: null },
-      select: ['id', 'deletedAt'],
+      where: { id: cardId },
+      select: ['id'],
     });
 
     if (!card) {
@@ -108,8 +118,8 @@ export class CommentService {
 
     // 존재하는 댓글인지 확인
     const comment = await this.commentRepository.findOne({
-      where: { id: commentId, deletedAt: null },
-      select: ['id', 'commenterId', 'deletedAt'],
+      where: { id: commentId },
+      select: ['id', 'commenterId'],
     });
 
     if (!comment) {
@@ -125,11 +135,12 @@ export class CommentService {
     await this.commentRepository.softDelete({ id: commentId });
 
     // 삭제 시간 반환
-    const { deletedAt } = await this.commentRepository.findOne({
+    const deletedComment = await this.commentRepository.findOne({
       where: { id: commentId },
-      select: ['id', 'deletedAt'],
+      withDeleted: true,
     });
+    console.log(deletedComment);
 
-    return { deletedAt };
+    return { id: commentId, deletedAt: deletedComment.deletedAt };
   }
 }

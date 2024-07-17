@@ -33,7 +33,7 @@ export class Comment {
   updatedAt: Date;
 
   @DeleteDateColumn()
-  deletedAt: Date | null;
+  deletedAt?: Date | null;
 
   @ManyToOne(() => Card, (card) => card.comments)
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })

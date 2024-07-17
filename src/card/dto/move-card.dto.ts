@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class MoveCardDto {
   /**
@@ -10,18 +10,10 @@ export class MoveCardDto {
   listId: number;
 
   /**
-   * 이동할 기점의 카드 ID
-   * @example 1
+   * 이동할 기점의 인덱스
+   * @example 3
    */
-  @IsNumber()
-  @IsOptional()
-  targetCardId?: number;
-
-  /**
-   * 이동할 위치
-   * @example "before"
-   */
-  @IsString()
-  @IsNotEmpty({ message: '위치를 입력해주세요.' })
-  position: 'before' | 'after';
+  @IsInt()
+  @IsNotEmpty({ message: '이동할 곳을 입력해주세요.' })
+  targetIndex: number;
 }

@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -59,13 +65,21 @@ export class BoardService {
   }
 
   async findAll(userId: number) {
-    const joinedBoardMembers = await this.boardMemberRepository.find({
-      where: {
-        memberId: userId,
-      },
-      relations: ['board'],
-    });
-    const joinedBoards = joinedBoardMembers.map((boardMember) => boardMember.board);
+    const joinedBoards = await this.boardRepository
+      .createQueryBuilder('board')
+      .leftJoin('board.members', 'boardMember')
+      .where('boardMember.memberId = :userId', { userId })
+      .andWhere('board.deletedAt IS NULL')
+      .select([
+        'board.id',
+        'board.adminId',
+        'board.title',
+        'board.backgroundColor',
+        'board.description',
+        'board.createdAt',
+        'board.updatedAt',
+      ])
+      .getMany();
     return joinedBoards;
   }
 
@@ -122,8 +136,15 @@ export class BoardService {
     if (userId !== board.adminId) {
       throw new UnauthorizedException('삭제 권한이 없습니다.');
     }
-    const deletedBoard = await this.boardRepository.softDelete(boardId);
-    return deletedBoard;
+    await this.boardRepository.softDelete(boardId);
+    const deletedBoard = await this.boardRepository.findOne({
+      where: {
+        id: boardId,
+      },
+      withDeleted: true,
+      select: ['id', 'deletedAt'],
+    });
+    return { boardId, deletedAt: deletedBoard.deletedAt };
   }
 
   async sendVerificationEmail(boardId: number, email: string, userId: number): Promise<string> {
@@ -144,11 +165,14 @@ export class BoardService {
       throw new NotFoundException(`초대할 이메일 ${email}와 맞는 유저를 찾을 수 없습니다.`);
     }
 
+    // 이미 등록된 멤버인지 확인
+    const member = await this.boardMemberRepository.findOne({ where: { boardId, memberId: user.id } });
+    if (member) {
+      throw new ConflictException('이미 멤버로 등록된 유저입니다.');
+    }
+
     // 초대 링크 전송
     const token = await this.emailService.sendEmailVerificationLink(email, boardId, user.id);
-
-    // 링크 토큰 redis에 저장
-    await this.emailService.storeTokenData(token, boardId, user.id, email);
 
     return token;
   }

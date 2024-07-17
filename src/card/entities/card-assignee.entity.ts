@@ -28,14 +28,11 @@ export class CardAssignee {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn()
-  deletedAt: Date | null;
-
-  @ManyToOne(() => Card, (card) => card.cardAssignees)
+  @ManyToOne(() => Card, (card) => card.cardAssignees, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
   card: Card;
 
-  // @ManyToOne(() => User, (user) => user.cardAssignee)
+  @ManyToOne(() => User, (user) => user.cardAssignees, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'assignee_id', referencedColumnName: 'id' })
   user: User;
 }

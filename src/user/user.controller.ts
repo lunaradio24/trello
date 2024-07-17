@@ -1,19 +1,36 @@
-import { Body, Controller, Get, HttpStatus, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Patch,
+  Post,
+  Request,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { UpdateMeDto } from './dto/update-me.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { S3Service } from '../s3/s3.service';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @ApiTags('Users')
-@Controller('users')
+@Controller('users/me')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly s3Service: S3Service,
+  ) {}
 
   /** 내 정보 조회 */
-  @Get('me')
-  async findMe(@Request() req: any) {
+  @Get()
+  async findMe(@Request() req) {
     const userId = req.user.id;
     const data = await this.userService.findOneById(userId);
 
@@ -37,7 +54,7 @@ export class UserController {
   }
 
   /** 내 정보 수정 */
-  @Patch('update/image')
+  @Patch('update')
   async updateMe(@Request() req: any, @Body() updateMeDto: UpdateMeDto) {
     const userId = req.user.id;
     const updatedMe = await this.userService.updateMe(userId, updateMeDto);
@@ -45,6 +62,24 @@ export class UserController {
       statusCode: HttpStatus.OK,
       message: '내 정보 수정에 성공했습니다.',
       data: updatedMe,
+    };
+  }
+
+  /** 프로필 이미지 업데이트 */
+  @Post('update/image')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(@Request() req, @UploadedFile() file: Express.MulterS3.File) {
+    const userId = req.user.id;
+
+    const [fileName, fileExt] = file.originalname.split('.');
+    const fileUrl = await this.s3Service.imageUploadToS3(`${Date.now()}_${fileName}`, file, fileExt);
+
+    const updatedMe = await this.userService.updateUserImage(userId, fileUrl);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: '이미지 업로드에 성공했습니다.',
+      fileUrl, // the URL of the uploaded file in S3
     };
   }
 }

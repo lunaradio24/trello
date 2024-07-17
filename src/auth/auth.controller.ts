@@ -37,6 +37,7 @@ export class AuthController {
 
   /** 로그아웃 */
   @Post('sign-out')
+  @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
   async signOut(@Request() req: any) {
     await this.authService.signOut(req.user.id);
@@ -46,7 +47,7 @@ export class AuthController {
   }
 
   /** 토큰 재발급 */
-  @Post('renew')
+  @Post('tokens/renew')
   @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
   async renewTokens(@Request() req: any) {

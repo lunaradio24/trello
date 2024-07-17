@@ -1,8 +1,7 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateCardDto } from './create-card.dto';
-import { IsDate, IsHexColor, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsHexColor, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class UpdateCardDto extends PartialType(CreateCardDto) {
+export class UpdateCardDto {
   /**
    * 카드명
    * @example "카드 이름"
@@ -31,7 +30,8 @@ export class UpdateCardDto extends PartialType(CreateCardDto) {
    * 마감일
    * @example "2024-07-17T12:00:00.000Z"
    */
-  @IsDate()
+  @IsDate({ message: '데이트 타입으로 입력해주세요.' })
   @IsOptional()
+  @Type(() => Date)
   readonly dueDate?: Date;
 }

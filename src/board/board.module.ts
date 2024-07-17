@@ -8,7 +8,7 @@ import { ListService } from '../list/list.service';
 import { List } from '../list/entities/list.entity';
 import { Card } from '../card/entities/card.entity';
 import { CardService } from '../card/card.service';
-import { CardAssignee } from '../card/entities/card_assignee.entity';
+import { CardAssignee } from '../card/entities/card-assignee.entity';
 import { EmailService } from '../email/email.service';
 import { User } from '../user/entities/user.entity';
 

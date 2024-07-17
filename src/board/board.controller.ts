@@ -18,12 +18,11 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { ListService } from '../list/list.service';
 import { CardService } from '../card/card.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { InviteBoardDto } from './dto/invite-board.dto';
 
 @ApiTags('Boards')
 @Controller('boards')
-@UseGuards(AccessTokenGuard)
 export class BoardController {
   constructor(
     private readonly boardService: BoardService,
@@ -33,6 +32,8 @@ export class BoardController {
 
   /** 보드 생성 */
   @Post()
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
   async create(@Body() createBoardDto: CreateBoardDto, @Req() req: any) {
     // userId로 adminId 지정
     const userId = Number(req.user.id);
@@ -46,6 +47,8 @@ export class BoardController {
 
   /** 내가 속한 보드 목록 조회 */
   @Get('joined')
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
   async findAll(@Req() req: any) {
     const userId = Number(req.user.id);
     const boards = await this.boardService.findAll(userId);
@@ -58,6 +61,8 @@ export class BoardController {
 
   /** 보드 상세 조회 */
   @Get(':boardId')
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
   async findOne(@Param('boardId', ParseIntPipe) boardId: number, @Req() req: any) {
     const userId = Number(req.user.id);
     const board = await this.boardService.findOne(boardId, userId);
@@ -71,6 +76,8 @@ export class BoardController {
 
   /** 보드 수정 */
   @Patch(':boardId')
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
   async update(
     @Param('boardId', ParseIntPipe) boardId: number,
     @Req() req: any,
@@ -88,6 +95,8 @@ export class BoardController {
 
   /** 보드 삭제 */
   @Delete(':boardId')
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
   async remove(@Param('boardId', ParseIntPipe) boardId: number, @Req() req: any) {
     // board 삭제 시 lists와 cards 함께 삭제 필요
     const userId = Number(req.user.id);
@@ -101,6 +110,8 @@ export class BoardController {
 
   /** 보드 초대 링크 발송 */
   @Post(':boardId/invite')
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
   async sendVerificationEmail(
     @Param('boardId') boardId: number,
     @Body() inviteBoardDto: InviteBoardDto,

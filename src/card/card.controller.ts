@@ -9,23 +9,26 @@ import {
   UseGuards,
   ParseIntPipe,
   HttpStatus,
-  Put,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { MoveCardDto } from './dto/move-card.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Cards')
 @Controller('cards')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class CardController {
   constructor(private readonly cardService: CardService) {}
 
   /** 카드 생성 */
   @Post()
+  @UsePipes(new ValidationPipe({ transform: true }))
   async createCard(@Body() createCardDto: CreateCardDto) {
     const card = await this.cardService.createCard(createCardDto);
     return {
@@ -48,6 +51,7 @@ export class CardController {
 
   /** 카드 수정 */
   @Patch(':cardId')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async updateCardById(@Param('cardId', ParseIntPipe) cardId: number, @Body() updateCardDto: UpdateCardDto) {
     const updateCard = await this.cardService.updateCardById(cardId, updateCardDto);
     return {
@@ -57,8 +61,43 @@ export class CardController {
     };
   }
 
+  /**카드 담당자 추가 */
+  @Post(':cardId/assignees/:assigneeId')
+  async addAssignee(
+    @Param('cardId', ParseIntPipe) cardId: number,
+    @Param('assigneeId', ParseIntPipe) assIgneeId: number,
+  ) {
+    const { cardAssignee, user } = await this.cardService.addAssignee(cardId, assIgneeId);
+    return {
+      status: HttpStatus.OK,
+      message: '카드 담당자를 추가했습니다.',
+      data: {
+        cardAssignee,
+        user: {
+          id: user.id,
+          email: user.email,
+          Image: user.image,
+        },
+      },
+    };
+  }
+
+  /**카드 담당자 삭제 */
+  @Delete(':cardId/assignees/:assigneeId')
+  async removeAssignee(
+    @Param('cardId', ParseIntPipe) cardId: number,
+    @Param('assigneeId', ParseIntPipe) assigneeId: number,
+  ) {
+    await this.cardService.removeAssignee(cardId, assigneeId);
+    return {
+      status: HttpStatus.OK,
+      message: '카드 담당자를 삭제했습니다.',
+    };
+  }
+
   /** 카드 이동 */
-  @Put(':cardId/move')
+  @Patch(':cardId/move')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async moveCardById(@Param('cardId', ParseIntPipe) cardId: number, @Body() moveCardDto: MoveCardDto) {
     const moveCard = await this.cardService.moveCardById(cardId, moveCardDto);
     return {
