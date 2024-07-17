@@ -14,8 +14,7 @@ import {
   POSITION_MULTIPLIER,
   POSITION_RECALCULATION_THRESHOLD,
 } from './constants/card.constant';
-import { BoardMember } from 'src/board/entities/board-member.entity';
-import { privateDecrypt } from 'crypto';
+import { BoardMember } from '../board/entities/board-member.entity';
 
 //레포지토리 가져오기
 @Injectable()

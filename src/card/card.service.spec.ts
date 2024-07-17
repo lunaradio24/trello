@@ -25,26 +25,11 @@ describe('CardService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CardService,
-        {
-          provide: getRepositoryToken(Card),
-          useClass: Repository,
-        },
-        {
-          provide: getRepositoryToken(CardAssignee),
-          useClass: Repository,
-        },
-        {
-          provide: getRepositoryToken(List),
-          useClass: Repository,
-        },
-        {
-          provide: getRepositoryToken(User),
-          useClass: Repository,
-        },
-        {
-          provide: getRepositoryToken(BoardMember),
-          useClass: Repository,
-        },
+        { provide: getRepositoryToken(Card), useClass: Repository },
+        { provide: getRepositoryToken(CardAssignee), useClass: Repository },
+        { provide: getRepositoryToken(List), useClass: Repository },
+        { provide: getRepositoryToken(User), useClass: Repository },
+        { provide: getRepositoryToken(BoardMember), useClass: Repository },
       ],
     }).compile();
 
@@ -57,7 +42,7 @@ describe('CardService', () => {
   });
 
   describe('createCard', () => {
-    it('should create a new card', async () => {
+    it('새로운 카드를 생성해야 합니다', async () => {
       const createCardDto: CreateCardDto = { title: 'New Card', listId: 1 };
       const list = new List();
       list.id = createCardDto.listId;
@@ -78,7 +63,7 @@ describe('CardService', () => {
       expect(result).toEqual(card);
     });
 
-    it('should throw a NotFoundException if list not found', async () => {
+    it('리스트를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const createCardDto: CreateCardDto = { title: 'New Card', listId: 1 };
 
       jest.spyOn(listRepository, 'findOne').mockResolvedValue(null);
@@ -86,7 +71,7 @@ describe('CardService', () => {
       await expect(service.createCard(createCardDto)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw a BadRequestException if card count exceeds limit', async () => {
+    it('카드 개수가 최대 한도를 초과하면 BadRequestException을 던져야 합니다', async () => {
       const createCardDto: CreateCardDto = { title: 'New Card', listId: 1 };
       const list = new List();
       list.id = createCardDto.listId;
@@ -99,7 +84,7 @@ describe('CardService', () => {
   });
 
   describe('getCardById', () => {
-    it('should return card details', async () => {
+    it('카드 상세 정보를 반환해야 합니다', async () => {
       const cardId = 1;
       const card = new Card();
       card.id = cardId;
@@ -136,7 +121,7 @@ describe('CardService', () => {
       });
     });
 
-    it('should throw a NotFoundException if card not found', async () => {
+    it('카드를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const cardId = 1;
       jest.spyOn(cardRepository, 'findOne').mockResolvedValue(null);
 
@@ -145,7 +130,7 @@ describe('CardService', () => {
   });
 
   describe('updateCardById', () => {
-    it('should update card and return updated card details', async () => {
+    it('카드를 수정하고 수정된 카드 정보를 반환해야 합니다', async () => {
       const cardId = 1;
       const updateCardDto: UpdateCardDto = { title: 'Updated Card' };
       const card = new Card();
@@ -189,18 +174,19 @@ describe('CardService', () => {
       });
     });
 
-    it('should throw a NotFoundException if card not found', async () => {
+    it('카드를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const cardId = 1;
       const updateCardDto: UpdateCardDto = { title: 'Updated Card' };
 
       jest.spyOn(cardRepository, 'update').mockResolvedValue({ affected: 0 } as any);
+      jest.spyOn(cardRepository, 'findOne').mockResolvedValue(null);
 
       await expect(service.updateCardById(cardId, updateCardDto)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('addAssignee', () => {
-    it('should add an assignee to the card', async () => {
+    it('카드에 담당자를 추가해야 합니다', async () => {
       const cardId = 1;
       const assigneeId = 1;
       const card = new Card();
@@ -222,7 +208,7 @@ describe('CardService', () => {
       expect(result).toEqual({ cardAssignee: new CardAssignee(), user });
     });
 
-    it('should throw a NotFoundException if card not found', async () => {
+    it('카드를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const cardId = 1;
       const assigneeId = 1;
 
@@ -231,7 +217,7 @@ describe('CardService', () => {
       await expect(service.addAssignee(cardId, assigneeId)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw a NotFoundException if user not found', async () => {
+    it('사용자를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const cardId = 1;
       const assigneeId = 1;
       const card = new Card();
@@ -243,7 +229,7 @@ describe('CardService', () => {
       await expect(service.addAssignee(cardId, assigneeId)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw a BadRequestException if user is not a board member', async () => {
+    it('사용자가 보드 멤버가 아니면 BadRequestException을 던져야 합니다', async () => {
       const cardId = 1;
       const assigneeId = 1;
       const card = new Card();
@@ -261,7 +247,7 @@ describe('CardService', () => {
       await expect(service.addAssignee(cardId, assigneeId)).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw a BadRequestException if assignee already exists', async () => {
+    it('담당자가 이미 존재하면 BadRequestException을 던져야 합니다', async () => {
       const cardId = 1;
       const assigneeId = 1;
       const card = new Card();
@@ -282,7 +268,7 @@ describe('CardService', () => {
   });
 
   describe('removeAssignee', () => {
-    it('should remove an assignee from the card', async () => {
+    it('카드에서 담당자를 삭제해야 합니다', async () => {
       const cardId = 1;
       const assigneeId = 1;
       const card = new Card();
@@ -296,7 +282,7 @@ describe('CardService', () => {
       expect(cardAssigneeRepository.delete).toHaveBeenCalledWith({ cardId, assigneeId });
     });
 
-    it('should throw a NotFoundException if card not found', async () => {
+    it('카드를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const cardId = 1;
       const assigneeId = 1;
 
@@ -305,7 +291,7 @@ describe('CardService', () => {
       await expect(service.removeAssignee(cardId, assigneeId)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw a NotFoundException if assignee not found', async () => {
+    it('담당자를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const cardId = 1;
       const assigneeId = 1;
       const card = new Card();
@@ -319,7 +305,7 @@ describe('CardService', () => {
   });
 
   describe('moveCardById', () => {
-    it('should move the card to a new position', async () => {
+    it('카드를 새로운 위치로 이동해야 합니다', async () => {
       const cardId = 1;
       const moveCardDto: MoveCardDto = { listId: 2, targetIndex: 1 };
       const card = new Card();
@@ -339,7 +325,7 @@ describe('CardService', () => {
       expect(result).toEqual(card);
     });
 
-    it('should throw a NotFoundException if card not found', async () => {
+    it('카드를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const cardId = 1;
       const moveCardDto: MoveCardDto = { listId: 2, targetIndex: 1 };
 
@@ -348,7 +334,7 @@ describe('CardService', () => {
       await expect(service.moveCardById(cardId, moveCardDto)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw a NotFoundException if target list not found', async () => {
+    it('목표 리스트를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const cardId = 1;
       const moveCardDto: MoveCardDto = { listId: 2, targetIndex: 1 };
       const card = new Card();
@@ -360,7 +346,7 @@ describe('CardService', () => {
       await expect(service.moveCardById(cardId, moveCardDto)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw a BadRequestException if target list is in a different board', async () => {
+    it('목표 리스트가 다른 보드에 속해 있으면 BadRequestException을 던져야 합니다', async () => {
       const cardId = 1;
       const moveCardDto: MoveCardDto = { listId: 2, targetIndex: 1 };
       const card = new Card();
@@ -379,7 +365,7 @@ describe('CardService', () => {
   });
 
   describe('removeCardById', () => {
-    it('should soft delete the card', async () => {
+    it('카드를 소프트 삭제해야 합니다', async () => {
       const cardId = 1;
       const card = new Card();
       card.id = cardId;
@@ -391,7 +377,7 @@ describe('CardService', () => {
       expect(cardRepository.softDelete).toHaveBeenCalledWith({ id: cardId });
     });
 
-    it('should throw a NotFoundException if card not found', async () => {
+    it('카드를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
       const cardId = 1;
 
       jest.spyOn(cardRepository, 'findOneBy').mockResolvedValue(null);
@@ -401,7 +387,7 @@ describe('CardService', () => {
   });
 
   describe('findAllBoards', () => {
-    it('should return all cards in a board', async () => {
+    it('보드의 모든 카드를 반환해야 합니다', async () => {
       const listId = 1;
       const cards = [new Card(), new Card()];
 
