@@ -61,7 +61,7 @@ export class EmailService {
 
   storeTokenData = async (token: string, boardId: number, userId: number, email: string) => {
     const data = JSON.stringify({ boardId, userId, email });
-    await this.redis.set(`email_verification_token_${token}`, data, { ex: EXPIRATION_TIME });
+    await this.redis.set(`email_verification_token_${token}`, data, { ex: EXPIRATION_TIME_IN_SECONDS });
   };
 
   async verifyTokenData(
