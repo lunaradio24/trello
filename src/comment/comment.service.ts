@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { CommentDto } from './dto/comment.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from './entities/comment.entity';
 import { Repository } from 'typeorm';
@@ -17,7 +18,9 @@ export class CommentService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(userId: number, cardId: number, commentDto: CommentDto) {
+  async create(userId: number, createCommentDto: CreateCommentDto) {
+    const { cardId } = createCommentDto;
+
     // 존재하는 카드인지 확인
     const card = await this.cardRepository.findOne({
       where: { id: cardId },
@@ -29,7 +32,7 @@ export class CommentService {
     }
 
     // 댓글 생성
-    return await this.commentRepository.save({ commenterId: userId, ...commentDto });
+    return await this.commentRepository.save({ commenterId: userId, ...createCommentDto });
   }
 
   async getListByCardId(cardId: number) {
@@ -62,18 +65,7 @@ export class CommentService {
     return await this.commentRepository.find({ where: { commenterId } });
   }
 
-  async update(userId: number, cardId: number, commentId: number, commentDto: CommentDto) {
-    // 존재하는 카드인지 확인
-    const card = await this.cardRepository.findOne({
-      relations: ['comments'],
-      where: { id: cardId },
-      select: ['id', 'comments'],
-    });
-
-    if (!card) {
-      throw new NotFoundException('존재하지 않는 카드입니다.');
-    }
-
+  async update(userId: number, commentId: number, updateCommentDto: UpdateCommentDto) {
     // 존재하는 댓글인지 확인
     const comment = await this.commentRepository.findOne({
       where: { id: commentId },
@@ -84,35 +76,19 @@ export class CommentService {
       throw new NotFoundException('존재하지 않는 댓글입니다.');
     }
 
-    // 해당 카드의 댓글인지 확인
-    const indexOfComment = card.comments.findIndex((comment) => comment.id === commentId);
-    if (indexOfComment < 0) {
-      throw new BadRequestException('해당 카드의 댓글이 아닙니다.');
-    }
-
     // 댓글 작성자 본인인지 확인
     if (comment.commenterId !== userId) {
-      throw new ForbiddenException('접근 권한이 없습니다.');
+      throw new ForbiddenException('수정 권한이 없습니다.');
     }
 
     // 댓글 수정
-    await this.commentRepository.update({ id: commentId }, commentDto);
+    await this.commentRepository.update({ id: commentId }, updateCommentDto);
 
     // 수정된 댓글 반환
     return await this.commentRepository.findOneBy({ id: commentId });
   }
 
-  async delete(userId: number, cardId: number, commentId: number) {
-    // 존재하는 카드인지 확인
-    const card = await this.cardRepository.findOne({
-      where: { id: cardId },
-      select: ['id'],
-    });
-
-    if (!card) {
-      throw new NotFoundException('존재하지 않는 카드입니다.');
-    }
-
+  async delete(userId: number, commentId: number) {
     // 존재하는 댓글인지 확인
     const comment = await this.commentRepository.findOne({
       where: { id: commentId },
@@ -125,19 +101,12 @@ export class CommentService {
 
     // 댓글 작성자 본인인지 확인
     if (comment.commenterId !== userId) {
-      throw new ForbiddenException('접근 권한이 없습니다.');
+      throw new ForbiddenException('삭제 권한이 없습니다.');
     }
 
     // 댓글 삭제
-    await this.commentRepository.softDelete({ id: commentId });
+    await this.commentRepository.delete({ id: commentId });
 
-    // 삭제 시간 반환
-    const deletedComment = await this.commentRepository.findOne({
-      where: { id: commentId },
-      withDeleted: true,
-    });
-    console.log(deletedComment);
-
-    return { id: commentId, deletedAt: deletedComment.deletedAt };
+    return { id: commentId };
   }
 }
