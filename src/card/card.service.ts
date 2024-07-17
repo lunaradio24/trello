@@ -110,7 +110,7 @@ export class CardService {
       })),
       attachments: card.attachments.map((attachment) => ({
         id: attachment.id,
-        //fileName: attachment.fileName,
+        fileName: attachment.fileName,
         fileUrl: attachment.fileUrl,
         createdAt: attachment.createdAt,
       })),
