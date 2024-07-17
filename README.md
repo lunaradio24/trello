@@ -17,6 +17,10 @@
 팀원 : ☕김진서<br>
 팀원 : 🕵🏿‍♂️조규민
 
+## 배포된 주소/API 명세서 (SWAGGER)
+
+[배포된링크](http://localhost:3000/api#/) (배포하고나서 수정해야함)
+
 ## 주요 기능
 
 ### Auth (인증)
@@ -81,8 +85,6 @@
 
 ![alt text](ERD.png)
 
-## API 명세서
-
 ## 기술 스택
 
 ### Programming Languages & Frameworks
@@ -104,8 +106,9 @@
 
 ### Infrastructure / Add-On / Database
 
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/Ubuntu/ubuntu1.svg)
 ![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/MySQL/mysql1.svg)
-<img src="https://img.shields.io/badge/Amazon%20S3-232F3E?style=flat-square&logo=amazonaws&logoColor=white" width="115"/>
+<img src="https://img.shields.io/badge/Amazon%20S3-232F3E?style=flat-square&logo=amazonaws&logoColor=white" width="110"/>
 <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white" width="87"/>
 
 ### Communication
