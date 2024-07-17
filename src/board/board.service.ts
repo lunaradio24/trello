@@ -87,13 +87,16 @@ export class BoardService {
     const board = await this.boardRepository.findOne({
       where: {
         id: boardId,
-        adminId: userId,
         deletedAt: null,
       },
-      relations: ['lists', 'lists.cards'],
+      relations: ['lists', 'lists.cards', 'members'],
     });
     if (!board) {
       throw new NotFoundException('보드가 존재하지 않습니다.');
+    }
+    const isMember = board.members.some((member) => member.memberId === userId);
+    if (!isMember) {
+      throw new UnauthorizedException('조회 권한이 없습니다.');
     }
     return board;
   }
