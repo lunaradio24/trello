@@ -47,16 +47,4 @@ export class UserController {
       data: updatedMe,
     };
   }
-
-  /** 비밀번호 변경 */
-  @Patch('me/update-password')
-  async updatePassword(@Request() req: any, @Body() updatePasswordDto: UpdatePasswordDto) {
-    const userId = req.user.id;
-    const { updatedAt } = await this.userService.updatePassword(userId, updatePasswordDto);
-    return {
-      status: HttpStatus.OK,
-      message: '비밀번호 수정에 성공했습니다.',
-      data: { updatedAt },
-    };
-  }
 }
