@@ -127,7 +127,7 @@ export class BoardController {
   }
 
   /** 보드 초대 수락 */
-  @Get(':boardId/invite')
+  @Get(':boardId/invite/accept')
   async acceptInvitation(@Param('boardId') boardId: number, @Query('token') token: string) {
     const invitedUserId = await this.boardService.acceptInvitation(boardId, token);
     return {
