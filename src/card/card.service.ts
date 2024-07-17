@@ -268,13 +268,25 @@ export class CardService {
   }
 
   //카드 소프트 딜리트
-  async removeCardById(id: number): Promise<void> {
+  async removeCardById(id: number): Promise<{ id: number; deletedAt: Date }> {
     const card = await this.cardRepository.findOneBy({ id });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
     await this.cardRepository.softDelete({ id });
+
+    const deletedCard = await this.cardRepository.findOne({
+      where: { id },
+      withDeleted: true,
+      select: ['id', 'deletedAt'],
+    });
+
+    if (!deletedCard || !deletedCard.deletedAt) {
+      throw new NotFoundException('삭제된 카드를 찾을 수 없습니다.');
+    }
+
+    return { id: deletedCard.id, deletedAt: deletedCard.deletedAt };
   }
 
   // board 상세조회 시 cards 가져오기

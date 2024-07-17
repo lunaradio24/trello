@@ -365,16 +365,19 @@ describe('CardService', () => {
   });
 
   describe('removeCardById', () => {
-    it('카드를 소프트 삭제해야 합니다', async () => {
+    it('카드를 소프트 딜리트해야 합니다', async () => {
       const cardId = 1;
       const card = new Card();
       card.id = cardId;
+      const deletedCard = { ...card, deletedAt: new Date() };
 
       jest.spyOn(cardRepository, 'findOneBy').mockResolvedValue(card);
       jest.spyOn(cardRepository, 'softDelete').mockResolvedValue(null);
+      jest.spyOn(cardRepository, 'findOne').mockResolvedValue(deletedCard);
 
-      await service.removeCardById(cardId);
+      const result = await service.removeCardById(cardId);
       expect(cardRepository.softDelete).toHaveBeenCalledWith({ id: cardId });
+      expect(result).toEqual({ id: cardId, deletedAt: deletedCard.deletedAt });
     });
 
     it('카드를 찾지 못하면 NotFoundException을 던져야 합니다', async () => {
