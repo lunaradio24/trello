@@ -17,9 +17,7 @@ export class CommentService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(userId: number, commentDto: CommentDto) {
-    const { cardId } = commentDto;
-
+  async create(userId: number, cardId: number, commentDto: CommentDto) {
     // 존재하는 카드인지 확인
     const card = await this.cardRepository.findOne({
       where: { id: cardId },
@@ -64,9 +62,8 @@ export class CommentService {
     return await this.commentRepository.find({ where: { commenterId } });
   }
 
-  async update(userId: number, commentId: number, commentDto: CommentDto) {
+  async update(userId: number, cardId: number, commentId: number, commentDto: CommentDto) {
     // 존재하는 카드인지 확인
-    const { cardId } = commentDto;
     const card = await this.cardRepository.findOne({
       relations: ['comments'],
       where: { id: cardId },
@@ -105,7 +102,7 @@ export class CommentService {
     return await this.commentRepository.findOneBy({ id: commentId });
   }
 
-  async delete(userId: number, commentId: number, cardId: number) {
+  async delete(userId: number, cardId: number, commentId: number) {
     // 존재하는 카드인지 확인
     const card = await this.cardRepository.findOne({
       where: { id: cardId },
