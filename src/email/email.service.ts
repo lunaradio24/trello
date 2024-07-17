@@ -4,7 +4,7 @@ import { createTransporter } from '../utils/email.util';
 import { createRedisClient } from '../utils/redis.util';
 import { Redis } from '@upstash/redis';
 import { sign } from 'jsonwebtoken';
-import { EXPIRATION_TIME } from './constants/email.constants';
+import { EXPIRATION_TIME_IN_SECONDS } from './constants/email.constants';
 
 @Injectable()
 export class EmailService {
@@ -48,7 +48,7 @@ export class EmailService {
       to: email,
       subject: ' 보드 초대 인증링크입니다.',
       html: `<p><a href="${clientUrl}/boards/${boardId}/invite/accept?token=${token}">여기</a>를 클릭해주세요.
-  해당 인증은 ${EXPIRATION_TIME / 3600}시간이 지나면 폐기됩니다.</p>`, //32400 / 3600 = 9
+  해당 인증은 ${EXPIRATION_TIME_IN_SECONDS / 3600}시간이 지나면 폐기됩니다.</p>`, //32400 / 3600 = 9
     };
 
     await this.transporter.sendMail(linkMailOptions);
