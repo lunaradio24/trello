@@ -9,6 +9,7 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Body,
 } from '@nestjs/common';
 import { AttachmentService } from './attachment.service';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
