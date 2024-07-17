@@ -87,14 +87,27 @@ export class BoardService {
     const board = await this.boardRepository.findOne({
       where: {
         id: boardId,
-        adminId: userId,
         deletedAt: null,
       },
-      relations: ['lists', 'lists.cards'],
+      relations: ['lists', 'lists.cards', 'members'],
+      order: {
+        lists: {
+          position: 'ASC',
+        },
+      },
     });
     if (!board) {
       throw new NotFoundException('보드가 존재하지 않습니다.');
     }
+    // boardMembers의 memberId 일치하면 조회 가능
+    const isMember = board.members.some((members) => members.memberId === userId);
+    if (!isMember) {
+      throw new UnauthorizedException('조회 권한이 없습니다.');
+    }
+    // cards 정렬하기
+    board.lists.forEach((lists) => {
+      lists.cards.sort((a, b) => a.position - b.position);
+    });
     return board;
   }
 
