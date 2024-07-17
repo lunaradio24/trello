@@ -25,11 +25,26 @@ describe('CardService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CardService,
-        { provide: getRepositoryToken(Card), useClass: Repository },
-        { provide: getRepositoryToken(CardAssignee), useClass: Repository },
-        { provide: getRepositoryToken(List), useClass: Repository },
-        { provide: getRepositoryToken(User), useClass: Repository },
-        { provide: getRepositoryToken(BoardMember), useClass: Repository },
+        {
+          provide: getRepositoryToken(Card),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(CardAssignee),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(List),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(User),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(BoardMember),
+          useClass: Repository,
+        },
       ],
     }).compile();
 
