@@ -17,14 +17,14 @@ export class Attachment {
   @Column({ type: 'int', nullable: false })
   cardId: number;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: false })
+  fileName: string;
+
+  @Column({ type: 'varchar', nullable: false })
   fileUrl: string;
 
   @CreateDateColumn()
   createdAt: Date;
-
-  @DeleteDateColumn()
-  deletedAt: Date | null;
 
   @ManyToOne(() => Card, (card) => card.attachments)
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
