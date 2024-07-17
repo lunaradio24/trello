@@ -2,14 +2,14 @@ import { PickType } from '@nestjs/swagger';
 import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 import { Comment } from '../entities/comment.entity';
 
-export class CommentDto extends PickType(Comment, ['cardId', 'content']) {
+export class CreateCommentDto extends PickType(Comment, ['cardId', 'content']) {
   /**
    * 카드 ID
    * @example 1
    */
   @IsInt()
   @IsNotEmpty()
-  readonly cardId: number;
+  cardId: number;
 
   /**
    * 댓글 내용
@@ -17,5 +17,5 @@ export class CommentDto extends PickType(Comment, ['cardId', 'content']) {
    */
   @IsString()
   @IsNotEmpty()
-  readonly content: string;
+  content: string;
 }

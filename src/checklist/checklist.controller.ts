@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { ChecklistService } from './checklist.service';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { CreateChecklistDto } from './dto/create-checklist.dto';
@@ -18,7 +6,7 @@ import { UpdateChecklistDto } from './dto/update-checklist.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Checklists')
-@Controller('checklist')
+@Controller('checklists')
 @ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class ChecklistController {
@@ -32,17 +20,6 @@ export class ChecklistController {
       status: HttpStatus.CREATED,
       message: '체크리스트 등록에 성공했습니다.',
       data: createdChecklist,
-    };
-  }
-
-  /** 체크리스트 목록 조회 */
-  @Get()
-  async getList(@Query('cardId', ParseIntPipe) cardId: number) {
-    const checklists = await this.checklistService.getListByCardId(cardId);
-    return {
-      status: HttpStatus.OK,
-      message: '체크리스트 목록 조회에 성공했습니다.',
-      data: checklists,
     };
   }
 
@@ -86,11 +63,10 @@ export class ChecklistController {
   @Delete(':checklistId')
   async delete(@Param('checklistId', ParseIntPipe) checklistId: number) {
     await this.checklistService.delete(checklistId);
-    const { deletedAt } = await this.checklistService.getOneByChecklistId(checklistId);
     return {
       status: HttpStatus.OK,
       message: '체크리스트 삭제에 성공했습니다.',
-      data: { id: checklistId, deletedAt },
+      data: { id: checklistId },
     };
   }
 }

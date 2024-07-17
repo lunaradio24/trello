@@ -1,10 +1,8 @@
-// import { Card } from 'src/card/entities/card.entity';
 import { Card } from '../../card/entities/card.entity';
 import { User } from '../../user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -32,14 +30,11 @@ export class Comment {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn()
-  deletedAt?: Date | null;
-
-  @ManyToOne(() => Card, (card) => card.comments)
+  @ManyToOne(() => Card, (card) => card.comments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
   card: Card;
 
-  @ManyToOne(() => User, (user) => user.comments)
+  @ManyToOne(() => User, (user) => user.comments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'commenter_id', referencedColumnName: 'id' })
   commenter: User;
 }
