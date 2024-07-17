@@ -66,22 +66,16 @@ export class BoardService {
   }
 
   async findAll(userId: number) {
-    // board를 통해 boardMember 조회 후 memberId와 일치하는 boars 조회
-    const joinedBoards = await this.boardRepository
-      .createQueryBuilder('board')
-      .leftJoin('board.members', 'boardMember')
-      .where('boardMember.memberId = :userId', { userId })
-      .andWhere('board.deletedAt IS NULL')
-      .select([
-        'board.id',
-        'board.adminId',
-        'board.title',
-        'board.backgroundColor',
-        'board.description',
-        'board.createdAt',
-        'board.updatedAt',
-      ])
-      .getMany();
+    const joinedBoardMembers = await this.boardMemberRepository.find({
+      where: {
+        memberId: userId,
+      },
+      order: {
+        id: 'ASC',
+      },
+      relations: ['board'],
+    });
+    const joinedBoards = joinedBoardMembers.map((boardMember) => boardMember.board);
     return joinedBoards;
   }
 
