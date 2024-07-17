@@ -77,6 +77,11 @@ export class UserService {
       throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
     }
 
+    // 비밀번호 돌려막기 차단
+    if (currPassword === newPassword) {
+      throw new BadRequestException('기존 비밀번호와 동일하게 변경할 수 없습니다.');
+    }
+
     // 새 비밀번호 해싱
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));
     const hashedNewPassword = await hash(newPassword, hashRounds);
