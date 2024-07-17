@@ -8,3 +8,4 @@ import { S3Service } from './s3.service';
   exports: [S3Service],
 })
 export class S3Module {}
+// AWS S3 Connector
