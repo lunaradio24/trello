@@ -10,6 +10,13 @@ export class CreateAttachmentDto {
   readonly cardId: string;
 
   /**
+   * 파일 이름
+   * @example "conan.txt"
+   */
+  @IsString()
+  fileName: string;
+
+  /**
    * 파일 주소
    * @example "conan.txt"
    */
