@@ -1,73 +1,143 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+  <img src="brown.png" alt="Sample Image">
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# 내이름은코난탐정2조의 [웹 서버] 트렐로 프로젝트 ![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/Trello/trello1.svg)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 프로젝트 소개
 
-## Description
+칸반보드 기반 Trello같은 프로젝트 협업 도구 서비스
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 팀소개
 
-## Installation
+팀장 : 🕵️여창준<br>
+팀원 : 🕵🏻조영진<br>
+팀원 : 🕵🏼‍♀️김현민<br>
+팀원 : 🕵🏼‍♀️이현우<br>
+팀원 : ☕김진서<br>
+팀원 : 🕵🏿‍♂️조규민
+
+## 배포된 주소/API 명세서 (SWAGGER)
+
+[배포된링크](http://localhost:3000/api#/) (배포하고나서 수정해야함)
+
+## 주요 기능
+
+### Auth (인증)
+
+- 회원가입
+- 로그인
+- 로그아웃
+- 토큰 재발급
+- 이메일 인증번호 발송
+- 이메일 인증번호 검증
+
+### User (사용자)
+
+- 프로필 조회
+- 프로필 수정
+- 비밀번호 수정
+- 프로필 수정 (image 업로드)
+
+### Board (보드)
+
+- 보드 생성
+- 보드 목록 조회
+- 보드 상세 조회
+- 보드 수정
+- 보드 삭제
+- 보드 멤버 초대
+- 보드 멤버 초대 수락
+
+### List (리스트)
+
+- 리스트 생성
+- 리스트 수정
+- 리스트 이동
+- 리스트 삭제
+
+### Card (카드)
+
+- 카드 생성
+- 카드 상세 조회
+- 카드 수정
+- 카드 이동
+- 카드 삭제
+- 카드 담당자 추가
+- 카드 담당자 삭제
+- 카드 체크리스트 추가
+- 카드 체크리스트 체크
+- 카드 체크리스트 수정
+- 카드 체크리스트 삭제
+- 댓글 생성
+- 댓글 수정
+- 댓글 삭제
+- 카드 첨부 파일 전체 조회
+- 카드 첨부 파일 업로드
+- 카드 첨부 파일 삭제
+- 카드 첨부 파일 다운로드
+
+### 와이어 프레임
+
+![alt text](yframe.png)
+
+## ERD
+
+![alt text](ERD.png)
+
+## 기술 스택
+
+### Programming Languages & Frameworks
+
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/NodeJS/nodejs1.svg)
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/npm/npm1.svg)
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/NestJS/nestjs1.svg)
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/TypeORM/typeorm1.svg)
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/TypeScript/typescript1.svg)
+
+### Editor & Tester
+
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/Git/git1.svg)
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/Github/github1.svg)
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/Jest/jest1.svg)
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/VisualStudioCode/visualstudiocode1.svg)
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/Webstorm/webstorm1.svg)
+<img src="https://img.shields.io/badge/Insomnia-5849BE?style=flat-square&logo=insomnia&logoColor=white" width="120"/>
+
+### Infrastructure / Add-On / Database
+
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/Ubuntu/ubuntu1.svg)
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/MySQL/mysql1.svg)
+<img src="https://img.shields.io/badge/Amazon%20S3-232F3E?style=flat-square&logo=amazonaws&logoColor=white" width="110"/>
+<img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white" width="87"/>
+
+### Communication
+
+![alt text](https://ziadoua.github.io/m3-Markdown-Badges/badges/Notion/notion1.svg)
+<img src="https://img.shields.io/badge/Slack-4A154B?style=flat-square&logo=slack&logoColor=white" width="86"/>
+
+## 패키지 설치
 
 ```bash
 $ npm install
 ```
 
-## Running the app
+## 실행 방법
 
 ```bash
-# development
+# 서버 실행(배포용)
 $ npm run start
 
-# watch mode
+# 서버 실행(개발용)
 $ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
-## Test
+## 테스트
 
 ```bash
-# unit tests
+# 테스트 실행
 $ npm run test
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
+# 테스트 커버리지 확인
 $ npm run test:cov
 ```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).

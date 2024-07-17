@@ -15,6 +15,6 @@ export class IsPasswordMatchingConstraint implements ValidatorConstraintInterfac
     if (!passwordConfirm) {
       return '비밀번호 확인을 입력해주세요.'; // passwordConfirm 필드가 비어있는 경우의 메시지
     }
-    return '비밀번호가 일치하지 않습니다.';
+    return '비밀번호 확인과 일치하지 않습니다.';
   }
 }

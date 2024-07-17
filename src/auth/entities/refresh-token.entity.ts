@@ -1,4 +1,4 @@
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -11,7 +11,7 @@ import {
 
 @Entity({ name: 'refresh_tokens' })
 export class RefreshToken {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
 
   @Column({ name: 'user_id', type: 'int', nullable: false })

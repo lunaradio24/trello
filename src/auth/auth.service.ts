@@ -1,16 +1,18 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { DataSource, Repository } from 'typeorm';
-import { User } from 'src/user/entities/user.entity';
+import { Repository } from 'typeorm';
+import { User } from '../user/entities/user.entity';
 import { compare, hash } from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { sign } from 'jsonwebtoken';
 import { RefreshToken } from './entities/refresh-token.entity';
-import { JwtPayload } from './constants/jwt-payload.interface';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../redis/redis.service';
+import { EmailService } from '../email/email.service';
+import { generateRandomNumber } from '../utils/generate-random-code.util';
 
 @Injectable()
 export class AuthService {
@@ -21,12 +23,37 @@ export class AuthService {
     private readonly tokenRepository: Repository<RefreshToken>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-    private readonly jwtService: JwtService,
-    private dataSource: DataSource,
+    private readonly emailService: EmailService,
+    private readonly redisService: RedisService,
   ) {}
 
+  async sendMail(email: string) {
+    // 이메일 인증코드 생성
+    const code = generateRandomNumber();
+    // redis에 인증코드 저장
+    await this.redisService.set(email, code);
+    // 이메일 전송
+    const isSuccess = await this.emailService.sendEmailVerificationCode(email, code);
+    return isSuccess ?? false;
+  }
+
+  async verifyEmail(email: string, code: number) {
+    // redis에 저장된 이메일 인증번호 가져와서 입력받은 숫자와 비교
+    const savedCode = await this.redisService.get(email);
+    if (!savedCode) {
+      throw new BadRequestException('인증코드를 재발송해주세요.');
+    }
+    if (savedCode !== code) {
+      throw new BadRequestException('잘못된 인증번호입니다.');
+    }
+
+    // redis에 저장된 이메일 인증번호 삭제
+    await this.redisService.del(email);
+    return true;
+  }
+
   async signUp(signUpDto: SignUpDto) {
-    const { email, password } = signUpDto;
+    const { email, password, nickname } = signUpDto;
 
     // 이메일 중복 여부 확인
     const existingUser = await this.userService.findByEmail(email);
@@ -42,10 +69,10 @@ export class AuthService {
     const newUser = await this.userRepository.save({
       email,
       password: hashedPassword,
+      nickname,
     });
 
     // 비밀번호 제외 후 반환
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...newUserWithoutPassword } = newUser;
     return newUserWithoutPassword;
   }
@@ -117,8 +144,13 @@ export class AuthService {
     const userId = payload.id;
 
     // Access Token, Refresh Token 생성
-    const accessToken = sign(payload, this.configService.get('ACCESS_TOKEN_SECRET_KEY'));
-    const refreshToken = sign(payload, this.configService.get('REFRESH_TOKEN_SECRET_KEY'));
+    const accessKey = this.configService.get('ACCESS_TOKEN_SECRET_KEY');
+    const accessExp = this.configService.get('ACCESS_TOKEN_EXPIRED_IN');
+    const refreshKey = this.configService.get('REFRESH_TOKEN_SECRET_KEY');
+    const refreshExp = this.configService.get('REFRESH_TOKEN_EXPIRED_IN');
+
+    const accessToken = sign(payload, accessKey, { expiresIn: accessExp });
+    const refreshToken = sign(payload, refreshKey, { expiresIn: refreshExp });
 
     // Refresh Token Hashing 후 DB에 저장
     const hashRounds = Number(this.configService.get('HASH_ROUNDS'));

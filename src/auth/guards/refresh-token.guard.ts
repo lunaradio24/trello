@@ -1,11 +1,15 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
 
 @Injectable()
 export class RefreshTokenGuard extends AuthGuard('refresh-token') {
-  constructor(private jwtService: JwtService) {
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {
     super();
   }
 
@@ -17,7 +21,9 @@ export class RefreshTokenGuard extends AuthGuard('refresh-token') {
     }
 
     try {
-      const givenPayload = this.jwtService.verify(givenRefreshToken);
+      const givenPayload = this.jwtService.verify(givenRefreshToken, {
+        secret: this.configService.get('REFRESH_TOKEN_SECRET_KEY'),
+      });
       request.user = givenPayload;
       return true;
     } catch (err) {
