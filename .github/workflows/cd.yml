@@ -46,8 +46,8 @@ jobs:
             # .env 파일 생성
             # ">" 는 생성 또는 덮어쓰기
             # ">>" 는 내용 덧붙이기
-            echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" > .env
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            # echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" > .env
+            # echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
 
             # 의존성 설치
             npm ci
