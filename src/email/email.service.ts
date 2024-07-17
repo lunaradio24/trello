@@ -46,7 +46,7 @@ export class EmailService {
       from: this.configService.get('EMAIL_USER'),
       to: email,
       subject: ' 보드 초대 인증링크입니다.',
-      html: `<p><a href="${clientUrl}/boards/${boardId}/accept-invitation?token=${token}">여기</a>를 클릭해주세요.
+      html: `<p><a href="${clientUrl}/boards/${boardId}/invite/accept?token=${token}">여기</a>를 클릭해주세요.
   해당 인증은 9시간이 지나면 폐기됩니다.</p>`,
     };
 

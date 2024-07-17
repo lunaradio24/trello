@@ -46,7 +46,8 @@ export class AuthController {
   }
 
   /** 토큰 재발급 */
-  @Post('renew-tokens')
+  @Post('renew')
+  @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
   async renewTokens(@Request() req: any) {
     const tokens = await this.authService.renewTokens(req.user.id, req.user.email);
@@ -57,7 +58,7 @@ export class AuthController {
   }
 
   /** 이메일 인증 코드 발송 */
-  @Post('send-email')
+  @Post('email/send')
   async sendEmail(@Body() sendEmailDto: SendEmailDto) {
     const isSuccess = await this.authService.sendMail(sendEmailDto.email);
     return {
@@ -67,7 +68,7 @@ export class AuthController {
   }
 
   /** 이메일 인증 */
-  @Post('verify-email')
+  @Post('email/verify')
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
     const isVerifiedCode = await this.authService.verifyEmail(verifyEmailDto.email, verifyEmailDto.code);
     return {
