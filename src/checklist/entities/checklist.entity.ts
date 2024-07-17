@@ -2,7 +2,6 @@ import { Card } from '../../card/entities/card.entity';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -33,10 +32,7 @@ export class Checklist {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @DeleteDateColumn()
-  deletedAt?: Date | null;
-
-  @ManyToOne(() => Card, (card) => card.checklists)
+  @ManyToOne(() => Card, (card) => card.checklists, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'card_id', referencedColumnName: 'id' })
   card: Card;
 }

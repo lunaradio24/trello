@@ -57,7 +57,7 @@ export class ChecklistService {
       select: ['id', 'updatedAt'],
     });
 
-    return { id: checklistId, checkedAt: updatedAt };
+    return { checkedAt: updatedAt };
   }
 
   async uncheck(checklistId: number) {
@@ -83,7 +83,7 @@ export class ChecklistService {
       select: ['id', 'updatedAt'],
     });
 
-    return { id: checklistId, uncheckedAt: updatedAt };
+    return { uncheckedAt: updatedAt };
   }
 
   async update(checklistId: number, updateChecklistDto: UpdateChecklistDto) {
@@ -98,7 +98,7 @@ export class ChecklistService {
     }
 
     // 체크리스트 수정
-    await this.checklistRepository.update({ id: checklistId }, { ...updateChecklistDto });
+    await this.checklistRepository.update({ id: checklistId }, updateChecklistDto);
     return { id: checklistId, ...updateChecklistDto };
   }
 
@@ -113,19 +113,8 @@ export class ChecklistService {
       throw new NotFoundException('존재하지 않는 체크리스트입니다.');
     }
 
-    // 체크리스트 삭제 (soft delete)
-    await this.checklistRepository.softDelete({ id: checklistId });
-
-    const deletedChecklist = await this.checklistRepository.findOne({
-      where: { id: checklistId },
-      withDeleted: true,
-      select: ['id', 'deletedAt'],
-    });
-    console.log(deletedChecklist);
-    if (!deletedChecklist || !deletedChecklist.deletedAt) {
-      throw new NotFoundException('삭제된 체크리스트를 찾을 수 없습니다.');
-    }
-
-    return { id: checklistId, deletedAt: deletedChecklist.deletedAt };
+    // 체크리스트 삭제
+    await this.checklistRepository.delete({ id: checklistId });
+    return;
   }
 }

@@ -1,9 +1,6 @@
-import { PickType } from '@nestjs/swagger';
-import { Checklist } from '../entities/checklist.entity';
-import { IsDate, IsDateString, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDateString, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class CreateChecklistDto extends PickType(Checklist, ['cardId', 'content', 'dueDate']) {
+export class CreateChecklistDto {
   /**
    * 카드 ID
    * @example 1
