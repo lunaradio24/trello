@@ -15,6 +15,7 @@ import {
   POSITION_RECALCULATION_THRESHOLD,
 } from './constants/card.constant';
 import { BoardMember } from 'src/board/entities/board-member.entity';
+import { privateDecrypt } from 'crypto';
 
 //레포지토리 가져오기
 @Injectable()
@@ -69,13 +70,49 @@ export class CardService {
   async getCardById(id: number): Promise<Card> {
     const card = await this.cardRepository.findOne({
       where: { id },
-      relations: ['checklists', 'attachments', 'cardAssignees', 'comments'],
-      order: { position: 'ASC' },
+      relations: ['checklists', 'attachments', 'cardAssignees', 'comments', 'cardAssignees.user', 'comments.commenter'],
     });
+
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
-    return card;
+
+    return {
+      id: card.id,
+      title: card.title,
+      description: card.description,
+      position: card.position,
+      listId: card.listId,
+      createdAt: card.createdAt,
+      updatedAt: card.updatedAt,
+      color: card.color,
+      dueDate: card.dueDate ?? null,
+      comments: card.comments.map((comment) => ({
+        id: comment.id,
+        content: comment.content,
+        commenterId: comment.commenter.id,
+        commenterNickname: comment.commenter.nickname,
+        commenterImage: comment.commenter.image,
+        createdAt: comment.createdAt.toISOString(),
+        updatedAt: comment.updatedAt.toISOString(),
+      })),
+      assignees: card.cardAssignees.map((assignee) => ({
+        id: assignee.user.id,
+        nickname: assignee.user.nickname,
+        profileImage: assignee.user.image,
+      })),
+      checklists: card.checklists.map((checklist) => ({
+        id: checklist.id,
+        content: checklist.content,
+        createdAt: checklist.createdAt.toISOString(),
+      })),
+      attachments: card.attachments.map((attachment) => ({
+        id: attachment.id,
+        //fileName: attachment.fileName,
+        fileUrl: attachment.fileUrl,
+        createdAt: attachment.createdAt.toISOString(),
+      })),
+    };
   }
 
   // 카드 수정 API
