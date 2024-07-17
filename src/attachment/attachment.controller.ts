@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
@@ -15,10 +14,11 @@ import { AttachmentService } from './attachment.service';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from '../s3/s3.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Attachment')
+@ApiTags('Attachments')
 @Controller('attachments')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 export class AttachmentController {
   constructor(

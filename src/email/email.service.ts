@@ -4,6 +4,7 @@ import { createTransporter } from '../utils/email.util';
 import { createRedisClient } from '../utils/redis.util';
 import { Redis } from '@upstash/redis';
 import { sign } from 'jsonwebtoken';
+import { EXPIRATION_TIME_IN_SECONDS } from './constants/email.constants';
 
 @Injectable()
 export class EmailService {
@@ -46,8 +47,8 @@ export class EmailService {
       from: this.configService.get('EMAIL_USER'),
       to: email,
       subject: ' 보드 초대 인증링크입니다.',
-      html: `<p><a href="${clientUrl}/boards/${boardId}/accept-invitation?token=${token}">여기</a>를 클릭해주세요.
-  해당 인증은 9시간이 지나면 폐기됩니다.</p>`,
+      html: `<p><a href="${clientUrl}/boards/${boardId}/invite/accept?token=${token}">여기</a>를 클릭해주세요.
+  해당 인증은 ${EXPIRATION_TIME_IN_SECONDS / 3600}시간이 지나면 폐기됩니다.</p>`, //32400 / 3600 = 9
     };
 
     await this.transporter.sendMail(linkMailOptions);
@@ -58,10 +59,10 @@ export class EmailService {
     return token; // 생성된 토큰 반환
   }
 
-  async storeTokenData(token: string, boardId: number, userId: number, email: string) {
+  storeTokenData = async (token: string, boardId: number, userId: number, email: string) => {
     const data = JSON.stringify({ boardId, userId, email });
-    await this.redis.set(`email_verification_token_${token}`, JSON.stringify(data), { ex: 9 * 60 * 60 });
-  }
+    await this.redis.set(`email_verification_token_${token}`, data, { ex: EXPIRATION_TIME_IN_SECONDS });
+  };
 
   async verifyTokenData(
     token: string,

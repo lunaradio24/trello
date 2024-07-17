@@ -31,6 +31,7 @@ export class BoardService {
   ) {}
 
   async create(userId: number, createBoardDto: CreateBoardDto) {
+    // board 생성과 boardMember 생성을 트랜잭션으로 처리
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -65,6 +66,7 @@ export class BoardService {
   }
 
   async findAll(userId: number) {
+    // board를 통해 boardMember 조회 후 memberId와 일치하는 boars 조회
     const joinedBoards = await this.boardRepository
       .createQueryBuilder('board')
       .leftJoin('board.members', 'boardMember')
@@ -87,14 +89,28 @@ export class BoardService {
     const board = await this.boardRepository.findOne({
       where: {
         id: boardId,
-        adminId: userId,
         deletedAt: null,
       },
-      relations: ['lists', 'lists.cards'],
+      // lists, cards, members 같이 조회, lists position 순서로 정렬
+      relations: ['lists', 'lists.cards', 'members'],
+      order: {
+        lists: {
+          position: 'ASC',
+        },
+      },
     });
     if (!board) {
       throw new NotFoundException('보드가 존재하지 않습니다.');
     }
+    // boardMembers의 memberId 일치하면 조회 가능
+    const isMember = board.members.some((members) => members.memberId === userId);
+    if (!isMember) {
+      throw new UnauthorizedException('조회 권한이 없습니다.');
+    }
+    // cards position 순서로 정렬
+    board.lists.forEach((lists) => {
+      lists.cards.sort((a, b) => a.position - b.position);
+    });
     return board;
   }
 
@@ -141,6 +157,7 @@ export class BoardService {
       where: {
         id: boardId,
       },
+      // softDelete된 board 조회 가능하도록
       withDeleted: true,
       select: ['id', 'deletedAt'],
     });
