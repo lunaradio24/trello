@@ -14,7 +14,7 @@ import {
   POSITION_MULTIPLIER,
   POSITION_RECALCULATION_THRESHOLD,
 } from './constants/card.constant';
-import { BoardMember } from 'src/board/entities/board-member.entity';
+import { BoardMember } from '../board/entities/board-member.entity';
 
 //레포지토리 가져오기
 @Injectable()
@@ -43,7 +43,9 @@ export class CardService {
     }
 
     //카드 생성 제한
-    const cardCount = await this.cardRepository.count({ where: { list: { id: listId }, deletedAt: null } });
+    const cardCount = await this.cardRepository.count({
+      where: { list: { id: listId }, deletedAt: null },
+    });
     if (cardCount >= MAX_CARD_COUNT) {
       throw new BadRequestException('카드 생성 제한을 초과했습니다.');
     }
@@ -66,20 +68,56 @@ export class CardService {
   }
 
   //카드 상세 조회 API
-  async getCardById(id: number): Promise<Card> {
+  async getCardById(id: number) {
     const card = await this.cardRepository.findOne({
       where: { id },
-      relations: ['checklists', 'attachments', 'cardAssignees', 'comments'],
-      order: { position: 'ASC' },
+      relations: ['checklists', 'attachments', 'cardAssignees', 'comments', 'cardAssignees.user', 'comments.commenter'],
     });
+
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
-    return card;
+
+    return {
+      id: card.id,
+      title: card.title,
+      description: card.description,
+      position: card.position,
+      listId: card.listId,
+      createdAt: card.createdAt,
+      updatedAt: card.updatedAt,
+      color: card.color,
+      dueDate: card.dueDate ?? null,
+      comments: card.comments.map((comment) => ({
+        id: comment.id,
+        content: comment.content,
+        commenterId: comment.commenter.id,
+        commenterNickname: comment.commenter.nickname,
+        commenterImage: comment.commenter.image,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+      })),
+      assignees: card.cardAssignees.map((assignee) => ({
+        id: assignee.user.id,
+        nickname: assignee.user.nickname,
+        profileImage: assignee.user.image,
+      })),
+      checklists: card.checklists.map((checklist) => ({
+        id: checklist.id,
+        content: checklist.content,
+        createdAt: checklist.createdAt,
+      })),
+      attachments: card.attachments.map((attachment) => ({
+        id: attachment.id,
+        fileName: attachment.fileName,
+        fileUrl: attachment.fileUrl,
+        createdAt: attachment.createdAt,
+      })),
+    };
   }
 
   // 카드 수정 API
-  async updateCardById(id: number, updateCardDto: UpdateCardDto): Promise<Card> {
+  async updateCardById(id: number, updateCardDto: UpdateCardDto) {
     const card = await this.cardRepository.update(id, updateCardDto);
     // 카드 존재 확인
     if (!card) {
@@ -92,12 +130,17 @@ export class CardService {
 
   // 카드 담당자 추가 API
   async addAssignee(cardId: number, assigneeId: number): Promise<{ cardAssignee: CardAssignee; user: User }> {
-    const card = await this.cardRepository.findOne({ where: { id: cardId }, relations: ['list'] });
+    const card = await this.cardRepository.findOne({
+      where: { id: cardId },
+      relations: ['list'],
+    });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
-    const user = await this.userRepository.findOne({ where: { id: assigneeId } });
+    const user = await this.userRepository.findOne({
+      where: { id: assigneeId },
+    });
     if (!user) {
       throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
     }
@@ -112,12 +155,17 @@ export class CardService {
       throw new BadRequestException('해당 사용자는 보드 멤버가 아닙니다.');
     }
 
-    const existingAssignee = await this.cardAssigneeRepository.findOne({ where: { cardId, assigneeId } });
+    const existingAssignee = await this.cardAssigneeRepository.findOne({
+      where: { cardId, assigneeId },
+    });
     if (existingAssignee) {
       throw new BadRequestException('이미 담당자로 추가된 사용자입니다.');
     }
 
-    const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
+    const cardAssignee = this.cardAssigneeRepository.create({
+      cardId,
+      assigneeId,
+    });
     await this.cardAssigneeRepository.save(cardAssignee);
 
     return { cardAssignee, user };
@@ -130,7 +178,9 @@ export class CardService {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
-    const existingAssignee = await this.cardAssigneeRepository.findOne({ where: { cardId, assigneeId } });
+    const existingAssignee = await this.cardAssigneeRepository.findOne({
+      where: { cardId, assigneeId },
+    });
     if (!existingAssignee) {
       throw new NotFoundException('삭제할 담당자가 없습니다.');
     }
@@ -142,12 +192,17 @@ export class CardService {
   async moveCardById(cardId: number, moveCardDto: MoveCardDto): Promise<Card> {
     const { listId: targetListId, targetIndex } = moveCardDto;
 
-    const card = await this.cardRepository.findOne({ where: { id: cardId }, relations: ['list'] });
+    const card = await this.cardRepository.findOne({
+      where: { id: cardId },
+      relations: ['list'],
+    });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
-    const targetList = await this.listRepository.findOne({ where: { id: targetListId } });
+    const targetList = await this.listRepository.findOne({
+      where: { id: targetListId },
+    });
     if (!targetList) {
       throw new NotFoundException('옮길 리스트를 찾을 수 없습니다.');
     }
@@ -213,13 +268,25 @@ export class CardService {
   }
 
   //카드 소프트 딜리트
-  async removeCardById(id: number): Promise<void> {
+  async removeCardById(id: number): Promise<{ id: number; deletedAt: Date }> {
     const card = await this.cardRepository.findOneBy({ id });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
     await this.cardRepository.softDelete({ id });
+
+    const deletedCard = await this.cardRepository.findOne({
+      where: { id },
+      withDeleted: true,
+      select: ['id', 'deletedAt'],
+    });
+
+    if (!deletedCard || !deletedCard.deletedAt) {
+      throw new NotFoundException('삭제된 카드를 찾을 수 없습니다.');
+    }
+
+    return { id: deletedCard.id, deletedAt: deletedCard.deletedAt };
   }
 
   // board 상세조회 시 cards 가져오기

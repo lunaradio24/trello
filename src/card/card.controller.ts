@@ -75,7 +75,7 @@ export class CardController {
         cardAssignee,
         user: {
           id: user.id,
-          email: user.email,
+          nickname: user.nickname,
           Image: user.image,
         },
       },
