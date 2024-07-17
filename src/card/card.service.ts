@@ -44,7 +44,9 @@ export class CardService {
     }
 
     //카드 생성 제한
-    const cardCount = await this.cardRepository.count({ where: { list: { id: listId }, deletedAt: null } });
+    const cardCount = await this.cardRepository.count({
+      where: { list: { id: listId }, deletedAt: null },
+    });
     if (cardCount >= MAX_CARD_COUNT) {
       throw new BadRequestException('카드 생성 제한을 초과했습니다.');
     }
@@ -67,7 +69,7 @@ export class CardService {
   }
 
   //카드 상세 조회 API
-  async getCardById(id: number): Promise<Card> {
+  async getCardById(id: number) {
     const card = await this.cardRepository.findOne({
       where: { id },
       relations: ['checklists', 'attachments', 'cardAssignees', 'comments', 'cardAssignees.user', 'comments.commenter'],
@@ -93,8 +95,8 @@ export class CardService {
         commenterId: comment.commenter.id,
         commenterNickname: comment.commenter.nickname,
         commenterImage: comment.commenter.image,
-        createdAt: comment.createdAt.toISOString(),
-        updatedAt: comment.updatedAt.toISOString(),
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
       })),
       assignees: card.cardAssignees.map((assignee) => ({
         id: assignee.user.id,
@@ -104,19 +106,19 @@ export class CardService {
       checklists: card.checklists.map((checklist) => ({
         id: checklist.id,
         content: checklist.content,
-        createdAt: checklist.createdAt.toISOString(),
+        createdAt: checklist.createdAt,
       })),
       attachments: card.attachments.map((attachment) => ({
         id: attachment.id,
         //fileName: attachment.fileName,
         fileUrl: attachment.fileUrl,
-        createdAt: attachment.createdAt.toISOString(),
+        createdAt: attachment.createdAt,
       })),
     };
   }
 
   // 카드 수정 API
-  async updateCardById(id: number, updateCardDto: UpdateCardDto): Promise<Card> {
+  async updateCardById(id: number, updateCardDto: UpdateCardDto) {
     const card = await this.cardRepository.update(id, updateCardDto);
     // 카드 존재 확인
     if (!card) {
@@ -129,12 +131,17 @@ export class CardService {
 
   // 카드 담당자 추가 API
   async addAssignee(cardId: number, assigneeId: number): Promise<{ cardAssignee: CardAssignee; user: User }> {
-    const card = await this.cardRepository.findOne({ where: { id: cardId }, relations: ['list'] });
+    const card = await this.cardRepository.findOne({
+      where: { id: cardId },
+      relations: ['list'],
+    });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
-    const user = await this.userRepository.findOne({ where: { id: assigneeId } });
+    const user = await this.userRepository.findOne({
+      where: { id: assigneeId },
+    });
     if (!user) {
       throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
     }
@@ -149,12 +156,17 @@ export class CardService {
       throw new BadRequestException('해당 사용자는 보드 멤버가 아닙니다.');
     }
 
-    const existingAssignee = await this.cardAssigneeRepository.findOne({ where: { cardId, assigneeId } });
+    const existingAssignee = await this.cardAssigneeRepository.findOne({
+      where: { cardId, assigneeId },
+    });
     if (existingAssignee) {
       throw new BadRequestException('이미 담당자로 추가된 사용자입니다.');
     }
 
-    const cardAssignee = this.cardAssigneeRepository.create({ cardId, assigneeId });
+    const cardAssignee = this.cardAssigneeRepository.create({
+      cardId,
+      assigneeId,
+    });
     await this.cardAssigneeRepository.save(cardAssignee);
 
     return { cardAssignee, user };
@@ -167,7 +179,9 @@ export class CardService {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
-    const existingAssignee = await this.cardAssigneeRepository.findOne({ where: { cardId, assigneeId } });
+    const existingAssignee = await this.cardAssigneeRepository.findOne({
+      where: { cardId, assigneeId },
+    });
     if (!existingAssignee) {
       throw new NotFoundException('삭제할 담당자가 없습니다.');
     }
@@ -179,12 +193,17 @@ export class CardService {
   async moveCardById(cardId: number, moveCardDto: MoveCardDto): Promise<Card> {
     const { listId: targetListId, targetIndex } = moveCardDto;
 
-    const card = await this.cardRepository.findOne({ where: { id: cardId }, relations: ['list'] });
+    const card = await this.cardRepository.findOne({
+      where: { id: cardId },
+      relations: ['list'],
+    });
     if (!card) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
-    const targetList = await this.listRepository.findOne({ where: { id: targetListId } });
+    const targetList = await this.listRepository.findOne({
+      where: { id: targetListId },
+    });
     if (!targetList) {
       throw new NotFoundException('옮길 리스트를 찾을 수 없습니다.');
     }
