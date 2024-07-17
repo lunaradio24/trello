@@ -3,7 +3,7 @@ name: Sparta Nest.js CD
 on:
   workflow_dispatch: # 수동 실행
   workflow_run: # 특정 workflow가 실행됐을 때
-    workflows: ['Trello CI'] # CI workflow
+    workflows: ['Sparta Nest.js'] # CI workflow
     types: [completed] # 완료 되었을 때
     branches: [main] # main 브랜치
 
