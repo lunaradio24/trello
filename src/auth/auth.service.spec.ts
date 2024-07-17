@@ -154,7 +154,7 @@ describe('AuthService', () => {
         comments: [],
         boards: [],
         members: [],
-        assignee: [],
+        cardAssignees: [],
       });
 
       const result = await authService.signUp(signUpDto);
@@ -171,7 +171,7 @@ describe('AuthService', () => {
         comments: [],
         boards: [],
         members: [],
-        assignee: [],
+        cardAssignees: [],
       });
     });
   });
