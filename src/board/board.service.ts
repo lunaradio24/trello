@@ -183,7 +183,7 @@ export class BoardService {
     }
 
     // 초대 링크 전송
-    const token = await this.emailService.sendEmailVerificationLink(email, boardId, user.id);
+    const token = await this.emailService.sendBoardInvitationLink(email, boardId, user.id);
 
     return token;
   }

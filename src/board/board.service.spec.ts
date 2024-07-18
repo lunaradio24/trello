@@ -27,7 +27,7 @@ jest.mock('../email/email.service', () => {
   return {
     EmailService: jest.fn().mockImplementation(() => {
       return {
-        sendEmailVerificationLink: jest.fn(),
+        sendBoardInvitationLink: jest.fn(),
         verifyTokenData: jest.fn(),
       };
     }),
@@ -341,7 +341,7 @@ describe('BoardService', () => {
       jest.spyOn(boardRepository, 'findOne').mockResolvedValue(board);
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(new User());
       jest.spyOn(boardMemberRepository, 'findOne').mockResolvedValue(null);
-      jest.spyOn(emailService, 'sendEmailVerificationLink').mockResolvedValue('test-token');
+      jest.spyOn(emailService, 'sendBoardInvitationLink').mockResolvedValue('test-token');
 
       const result = await boardService.sendVerificationEmail(1, 'test@example.com', 1);
       expect(result).toBe('test-token');

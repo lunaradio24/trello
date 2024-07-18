@@ -35,7 +35,7 @@ export class EmailService {
     return true;
   }
 
-  async sendEmailVerificationLink(email: string, boardId: number, userId: number): Promise<string> {
+  async sendBoardInvitationLink(email: string, boardId: number, userId: number): Promise<string> {
     if (!email) {
       throw new Error('이메일 주소가 정의되지 않았습니다.');
     }
@@ -61,26 +61,40 @@ export class EmailService {
 
   storeTokenData = async (token: string, boardId: number, userId: number, email: string) => {
     const data = JSON.stringify({ boardId, userId, email });
-    await this.redis.set(`email_verification_token_${token}`, data, { ex: EXPIRATION_TIME_IN_SECONDS });
+    await this.redis.set(`board_invitation_token_${token}`, data, { ex: EXPIRATION_TIME_IN_SECONDS });
   };
 
   async verifyTokenData(
     token: string,
   ): Promise<{ boardId: number; userId: number; email: string } | { message: string }> {
-    const data: string | null = await this.redis.get(`email_verification_token_${token}`);
+    const data: string | null = await this.redis.get(`board_invitation_token_${token}`);
 
     if (!data) {
       return { message: '토큰이 유효하지 않거나 만료되었습니다.' }; // 토큰이 유효하지 않거나 만료된 경우
     }
 
-    const parsedData = JSON.parse(data);
+    try {
+      let parsedData: { boardId: number; email: string; userId: number };
+      // 데이터가 문자열이면 JSON 파싱
+      if (typeof data === 'string') {
+        console.log(`Retrieved data: ${data}`); // 데이터 로그 추가
+        parsedData = JSON.parse(data);
+      } else if (typeof data === 'object') {
+        parsedData = data; // 이미 객체인 경우 그대로 사용
+      } else {
+        parsedData = JSON.parse(JSON.stringify(data));
+      }
 
-    // 데이터가 유효한지 확인
-    if (!parsedData.boardId || !parsedData.userId || !parsedData.email) {
+      // 데이터가 유효한지 확인
+      if (!parsedData.boardId || !parsedData.userId || !parsedData.email) {
+        return { message: '토큰 데이터가 올바르지 않습니다.' };
+      }
+
+      await this.redis.del(`board_invitation_token_${token}`);
+      return parsedData; // 유효한 경우 데이터 반환
+    } catch (error) {
+      console.error(`Failed to parse token data: ${error.message}`);
       return { message: '토큰 데이터가 올바르지 않습니다.' };
     }
-
-    await this.redis.del(`email_verification_token_${token}`);
-    return parsedData; // 유효한 경우 데이터 반환
   }
 }
