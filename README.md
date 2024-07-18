@@ -19,7 +19,10 @@
 
 ## 배포된 주소/API 명세서 (SWAGGER)
 
-[배포된링크](http://localhost:3000/api#/) (배포하고나서 수정해야함)
+
+[배포된링크](https://ginger-sparta.duckdns.org/) <br>
+[SWAGGER](https://ginger-sparta.duckdns.org/api)
+
 
 ## 주요 기능
 
