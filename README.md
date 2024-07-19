@@ -29,64 +29,80 @@
 ### Auth (인증)
 
 - 회원가입
-- 로그인
-- 로그아웃
+- 로그인 / 로그아웃
 - 토큰 재발급
-- 이메일 인증번호 발송
-- 이메일 인증번호 검증
+- 이메일 인증번호 발송 / 검증
 
 ### User (사용자)
 
-- 프로필 조회
-- 프로필 수정
+- 프로필 조회 / 수정
 - 비밀번호 수정
-- 프로필 수정 (image 업로드)
+- 프로필 이미지 수정 (multer-s3 사용)
 
 ### Board (보드)
 
-- 보드 생성
-- 보드 목록 조회
-- 보드 상세 조회
-- 보드 수정
-- 보드 삭제
-- 보드 멤버 초대
-- 보드 멤버 초대 수락
+- 보드 생성 / 목록 조회 / 상세 조회 / 수정 / 삭제
+- 보드 멤버 초대 / 수락
 
 ### List (리스트)
 
-- 리스트 생성
-- 리스트 수정
-- 리스트 이동
-- 리스트 삭제
+- 리스트 생성 / 수정 / 삭제
+  (목록 조회 / 상세 조회는 보드 상세 조회에 포함)
+- 리스트 위치 이동
 
 ### Card (카드)
 
-- 카드 생성
-- 카드 상세 조회
-- 카드 수정
-- 카드 이동
-- 카드 삭제
-- 카드 담당자 추가
-- 카드 담당자 삭제
-- 카드 체크리스트 추가
-- 카드 체크리스트 체크
-- 카드 체크리스트 수정
-- 카드 체크리스트 삭제
-- 댓글 생성
-- 댓글 수정
-- 댓글 삭제
-- 카드 첨부 파일 전체 조회
-- 카드 첨부 파일 업로드
-- 카드 첨부 파일 삭제
-- 카드 첨부 파일 다운로드
+- 카드 생성 / 상세 조회 / 수정 / 삭제
+- 카드 위치 이동
 
-### 와이어 프레임
+  #### Assignee (작업 담당자)
+  - 카드 담당자 추가 / 삭제
+
+  #### Checklist (체크리스트)
+  - 카드 체크리스트 추가 / 수정 / 삭제
+    (목록 조회는 카드 상세 조회에 포함)
+  - 카드 체크리스트 체크 / 언체크
+
+  #### Comment (댓글)
+  - 댓글 생성 / 수정 / 삭제
+    (목록 조회는 카드 상세 조회에 포함)
+
+  #### Attachment (첨부파일)
+  - 카드 첨부 파일 업로드 / 다운로드
+  - 카드 첨부 파일 삭제
+    (목록 조회는 카드 상세 조회에 포함)
+
+## 와이어 프레임
 
 ![alt text](yframe.png)
 
 ## ERD
 
 ![alt text](ERD.png)
+
+## 기능 도식화
+
+### 핵심 기능
+<img width="720" alt="image" src="https://github.com/user-attachments/assets/c9328745-f6b5-48a6-8547-db673624ff7e">
+
+### 부가 기능
+<img width="720" alt="image" src="https://github.com/user-attachments/assets/a821096d-ce6b-4117-922b-c3c17901350b">
+
+#### 핵심 기능 - 보드 초대
+<img width="720" alt="image" src="https://github.com/user-attachments/assets/a830171c-f2c0-403e-bb16-39cbcc96d6e0">
+<img width="720" alt="image" src="https://github.com/user-attachments/assets/720a7384-a6cc-44c8-9730-e5f2a375e343">
+<img width="720" alt="image" src="https://github.com/user-attachments/assets/63237f71-0af6-4218-bf5e-9365ebe2296f">
+
+#### 부가 기능 - 파일 첨부
+<img width="720" alt="image" src="https://github.com/user-attachments/assets/76c75bb2-a4ac-4145-b21a-f64655a79e87">
+
+#### 핵심 기능 - 카드 생성
+<img width="720" alt="image" src="https://github.com/user-attachments/assets/c1e919a6-7dbc-45ac-ba7e-3674c067ea92">
+
+#### 핵심 기능 - 카드 이동
+<img width="720" alt="image" src="https://github.com/user-attachments/assets/2e7704f4-df50-43d3-b92e-6c43e89f5c12">
+
+
 
 ## 기술 스택
 
